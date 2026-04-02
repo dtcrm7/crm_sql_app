@@ -19,6 +19,7 @@ Both functions:
 from __future__ import annotations
 
 import logging
+import os
 import traceback
 
 import streamlit as st
@@ -27,8 +28,9 @@ _logger = logging.getLogger("crm.dashboard")
 
 # Make sure the root logger emits at least ERROR level so our messages appear
 # even if the user hasn't configured logging explicitly.
+_LOG_LEVEL = os.getenv("CRM_LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=getattr(logging, _LOG_LEVEL, logging.INFO),
     format="%(asctime)s  %(levelname)-8s  %(name)s — %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
