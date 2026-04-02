@@ -9,3 +9,4 @@ google-auth
 plotly
 altair
 bcrypt
+streamlit-cookies-controller
