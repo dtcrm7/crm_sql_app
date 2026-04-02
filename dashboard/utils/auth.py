@@ -109,8 +109,9 @@ def _fetch_user(username: str) -> Optional[dict]:
             cur.execute("""
                 SELECT username, name, password_hash, role, is_active
                 FROM dashboard_users
-                WHERE username = %s
-            """, (username.strip().lower(),))
+                WHERE LOWER(username) = LOWER(%s)
+                LIMIT 1
+            """, (username.strip(),))
             row = cur.fetchone()
         if not row:
             return None
