@@ -20,8 +20,9 @@ from dotenv import load_dotenv
 logger = logging.getLogger("crm.db")
 
 # Ensure a basic handler exists even if the caller never calls basicConfig.
+_LOG_LEVEL = os.getenv("CRM_LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=getattr(logging, _LOG_LEVEL, logging.INFO),
     format="%(asctime)s  %(levelname)-8s  %(name)s — %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
