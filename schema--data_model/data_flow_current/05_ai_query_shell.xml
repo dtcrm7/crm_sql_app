@@ -1,0 +1,216 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1350" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ===== TITLE ===== -->
+    <mxCell id="title" vertex="1" parent="1"
+      value="B2B CRM — Diagram 5: AI Query Shell  (Natural Language → SQL → Results)"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="0" y="18" width="1100" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="subtitle" vertex="1" parent="1"
+      value="Ask anything in plain English · AI converts to SQL · Results printed in terminal · Supports Gemini or Claude API"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#5A7A9A;">
+      <mxGeometry x="0" y="52" width="1100" height="18" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 1: CONFIG ===== -->
+    <mxCell id="lbl-cfg" vertex="1" parent="1" value="① CONFIGURATION  (.env file — set once, never hardcode in script)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="86" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- API key box -->
+    <mxCell id="cfg-ai" vertex="1" parent="1"
+      value="AI Provider (choose one)&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;&lt;b&gt;GEMINI_API_KEY&lt;/b&gt; = AIza...&lt;br&gt;&lt;b&gt;CLAUDE_API_KEY&lt;/b&gt; = sk-ant-...&lt;br&gt;&lt;font style=&quot;color:#D97706;&quot;&gt;AI_PROVIDER = gemini | claude&lt;/font&gt;&lt;br&gt;AI_MODEL = gemini-2.0-flash | claude-sonnet-4-6&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#92400E;fontSize=11;fontStyle=1;align=left;">
+      <mxGeometry x="30" y="110" width="320" height="95" as="geometry" />
+    </mxCell>
+
+    <!-- DB config box -->
+    <mxCell id="cfg-db" vertex="1" parent="1"
+      value="Database Connection&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;&lt;b&gt;DB_HOST&lt;/b&gt; = localhost&lt;br&gt;&lt;b&gt;DB_PORT&lt;/b&gt; = 5432&lt;br&gt;&lt;b&gt;DB_NAME&lt;/b&gt; = crm_db&lt;br&gt;&lt;b&gt;DB_USER&lt;/b&gt; / &lt;b&gt;DB_PASSWORD&lt;/b&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#92400E;fontSize=11;fontStyle=1;align=left;">
+      <mxGeometry x="380" y="110" width="260" height="95" as="geometry" />
+    </mxCell>
+
+    <!-- Schema context note -->
+    <mxCell id="cfg-schema" vertex="1" parent="1"
+      value="Schema Context (auto-loaded)&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Script reads live table/column names&lt;br&gt;from PostgreSQL information_schema&lt;br&gt;and injects into the AI prompt —&lt;br&gt;no manual schema file needed&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#92400E;fontSize=11;fontStyle=1;align=left;">
+      <mxGeometry x="670" y="110" width="280" height="95" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 2: USER INPUT ===== -->
+    <mxCell id="lbl-input" vertex="1" parent="1" value="② USER  (types a plain-English question in the terminal)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="225" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="terminal-in" vertex="1" parent="1"
+      value="$ python ai_query_shell.py&lt;div&gt;&lt;font style=&quot;color:#86EFAC;font-size:11px;&quot;&gt;CRM AI Shell — type your question (or &apos;exit&apos; to quit)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#FCD34D;font-size:12px;&quot;&gt;&amp;gt;&amp;gt; How many contacts were allocated today?&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#FCD34D;font-size:12px;&quot;&gt;&amp;gt;&amp;gt; Which agents are on leave this week?&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#FCD34D;font-size:12px;&quot;&gt;&amp;gt;&amp;gt; Show top 5 companies by contact count&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C1917;strokeColor=#57534E;fontColor=#F5F5F4;fontSize=12;fontStyle=1;align=left;">
+      <mxGeometry x="30" y="249" width="600" height="110" as="geometry" />
+    </mxCell>
+
+    <mxCell id="note-examples" vertex="1" parent="1"
+      value="&lt;b&gt;Example questions:&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;· How many fresh contacts are available?&lt;br&gt;· Show me DND contacts added this month&lt;br&gt;· Which agent has the most allocations today?&lt;br&gt;· List contacts with shared_story flag&lt;br&gt;· How many calls were connected yesterday?&lt;br&gt;· Show all agents currently on leave&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#7DD3FC;fontColor=#0C4A6E;fontSize=10;align=left;">
+      <mxGeometry x="650" y="249" width="280" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 3: AI QUERY SHELL SCRIPT ===== -->
+    <mxCell id="lbl-script" vertex="1" parent="1" value="③ AI QUERY SHELL  (ai_query_shell.py)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="375" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="script" vertex="1" parent="1"
+      value="ai_query_shell.py&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;① Load .env → get API key + DB credentials&lt;br&gt;② Connect to PostgreSQL · fetch live schema (tables + columns + types)&lt;br&gt;③ Build system prompt: inject schema + CRM business rules + SQL dialect = PostgreSQL&lt;br&gt;④ Send user question + schema context to AI API&lt;br&gt;⑤ Extract SQL from AI response · validate (SELECT only — no writes)&lt;br&gt;⑥ Execute SQL against crm_db · fetch results&lt;br&gt;⑦ Pretty-print results as table in terminal&lt;br&gt;⑧ Loop — wait for next question&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=13;fontStyle=1;align=left;">
+      <mxGeometry x="30" y="398" width="1040" height="120" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-in-script" edge="1" parent="1" source="terminal-in" target="script"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 4: AI API CALL ===== -->
+    <mxCell id="lbl-api" vertex="1" parent="1" value="④ AI API CALL  (Gemini or Claude — whichever key is in .env)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="535" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- Gemini box -->
+    <mxCell id="api-gemini" vertex="1" parent="1"
+      value="Google Gemini API&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Model: gemini-2.0-flash&lt;br&gt;google-generativeai SDK&lt;br&gt;genai.GenerativeModel()&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4285F4;strokeColor=#1A56CC;fontColor=#ffffff;fontSize=12;fontStyle=1;">
+      <mxGeometry x="30" y="558" width="280" height="85" as="geometry" />
+    </mxCell>
+
+    <!-- Claude box -->
+    <mxCell id="api-claude" vertex="1" parent="1"
+      value="Anthropic Claude API&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Model: claude-sonnet-4-6&lt;br&gt;anthropic SDK&lt;br&gt;client.messages.create()&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D97706;strokeColor=#92400E;fontColor=#ffffff;fontSize=12;fontStyle=1;">
+      <mxGeometry x="340" y="558" width="280" height="85" as="geometry" />
+    </mxCell>
+
+    <!-- Prompt structure note -->
+    <mxCell id="prompt-box" vertex="1" parent="1"
+      value="&lt;b&gt;System Prompt sent to AI:&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;You are a PostgreSQL expert for a B2B CRM database.&lt;br&gt;Schema: [auto-injected table + column definitions]&lt;br&gt;Rules: Return ONLY a SELECT statement. No INSERT/UPDATE/DELETE.&lt;br&gt;Use snake_case column names. Limit results to 100 rows unless asked.&lt;br&gt;User question: [user input]&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;fontColor=#1F2937;fontSize=10;align=left;">
+      <mxGeometry x="650" y="558" width="420" height="90" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-script-gemini" edge="1" parent="1" source="script" target="api-gemini"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-script-claude" edge="1" parent="1" source="script" target="api-claude"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 5: SQL RETURNED ===== -->
+    <mxCell id="lbl-sql" vertex="1" parent="1" value="⑤ AI RETURNS SQL  (validated before execution)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="660" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="sql-box" vertex="1" parent="1"
+      value="&lt;font style=&quot;color:#86EFAC;&quot;&gt;-- AI-generated SQL (example for: &quot;How many contacts allocated today?&quot;)&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color:#93C5FD;&quot;&gt;SELECT&lt;/font&gt;&lt;font style=&quot;color:#F5F5F4;&quot;&gt; COUNT(*) AS allocated_today&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#93C5FD;&quot;&gt;FROM&lt;/font&gt;&lt;font style=&quot;color:#F5F5F4;&quot;&gt; contact_allocations&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#93C5FD;&quot;&gt;WHERE&lt;/font&gt;&lt;font style=&quot;color:#F5F5F4;&quot;&gt; allocated_date = CURRENT_DATE&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#93C5FD;&quot;&gt;  AND&lt;/font&gt;&lt;font style=&quot;color:#F5F5F4;&quot;&gt; closed_at IS NULL;&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C1917;strokeColor=#57534E;fontColor=#F5F5F4;fontSize=12;fontStyle=1;align=left;">
+      <mxGeometry x="30" y="683" width="580" height="95" as="geometry" />
+    </mxCell>
+
+    <!-- Safety guard -->
+    <mxCell id="safety" vertex="1" parent="1"
+      value="Safety Guard&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Script strips code fences (```sql...```)&lt;br&gt;Checks: must start with SELECT&lt;br&gt;Blocks: INSERT · UPDATE · DELETE · DROP&lt;br&gt;Raises error if unsafe SQL detected&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;fontSize=11;fontStyle=1;">
+      <mxGeometry x="640" y="683" width="290" height="95" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-gemini-sql" edge="1" parent="1" source="api-gemini" target="sql-box"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-claude-sql" edge="1" parent="1" source="api-claude" target="sql-box"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 6: DATABASE EXECUTION ===== -->
+    <mxCell id="lbl-exec" vertex="1" parent="1" value="⑥ DATABASE EXECUTION  (psycopg2 — read-only connection)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="795" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="db" vertex="1" parent="1"
+      value="PostgreSQL · crm_db"
+      style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontStyle=1;gradientColor=#7ea6e0;fontSize=20;">
+      <mxGeometry x="270" y="818" width="560" height="70" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-sql-db" edge="1" parent="1" source="sql-box" target="db"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Table rows fed to db -->
+    <mxCell id="db-tables" vertex="1" parent="1"
+      value="Queries span all Phase 1 + Phase 2A tables: companies · contacts · contact_emails · contact_phones · agents · agent_leave_log · contact_allocations · call_actions"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#BFDBFE;fontColor=#1E40AF;fontSize=10;fontStyle=0;align=center;">
+      <mxGeometry x="30" y="820" width="220" height="68" as="geometry" />
+    </mxCell>
+    <mxCell id="e-dbtables-db" edge="1" parent="1" source="db-tables" target="db"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 7: SHELL OUTPUT ===== -->
+    <mxCell id="lbl-out" vertex="1" parent="1" value="⑦ SHELL OUTPUT  (results printed as formatted table in terminal)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="908" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="terminal-out" vertex="1" parent="1"
+      value="&lt;font style=&quot;color:#FCD34D;font-size:12px;&quot;&gt;&amp;gt;&amp;gt; How many contacts were allocated today?&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color:#86EFAC;font-size:10px;&quot;&gt;SQL: SELECT COUNT(*) AS allocated_today FROM contact_allocations WHERE allocated_date = CURRENT_DATE AND closed_at IS NULL;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#E2E8F0;font-size:11px;&quot;&gt;+------------------+&lt;br&gt;| allocated_today  |&lt;br&gt;+------------------+&lt;br&gt;|      847         |&lt;br&gt;+------------------+&lt;br&gt;1 row · 0.012 s&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color:#FCD34D;font-size:12px;&quot;&gt;&amp;gt;&amp;gt; _&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1C1917;strokeColor=#57534E;fontColor=#F5F5F4;fontSize=12;fontStyle=1;align=left;">
+      <mxGeometry x="30" y="931" width="640" height="175" as="geometry" />
+    </mxCell>
+
+    <!-- Output notes -->
+    <mxCell id="out-notes" vertex="1" parent="1"
+      value="&lt;b&gt;Output features:&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;· SQL shown before results (transparent)&lt;br&gt;· Results in ASCII table format&lt;br&gt;· Row count + query time shown&lt;br&gt;· Errors shown with AI explanation&lt;br&gt;· &apos;exit&apos; or Ctrl+C to quit&lt;br&gt;&lt;br&gt;&lt;b&gt;Dependencies (pip install):&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;psycopg2-binary · python-dotenv&lt;br&gt;google-generativeai  (Gemini)&lt;br&gt;anthropic             (Claude)&lt;br&gt;tabulate              (table format)&lt;/font&gt;&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#86EFAC;fontColor=#14532D;fontSize=10;align=left;">
+      <mxGeometry x="690" y="931" width="300" height="175" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-db-out" edge="1" parent="1" source="db" target="terminal-out"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== LOOP NOTE ===== -->
+    <mxCell id="loop-note" vertex="1" parent="1"
+      value="Shell loops continuously — after each result it waits for the next question  →  type &apos;exit&apos; to quit  ♻"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=11;fontStyle=1;align=center;">
+      <mxGeometry x="30" y="1120" width="1040" height="32" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-out-loop" edge="1" parent="1" source="terminal-out" target="loop-note"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== IMPLEMENTATION NOTE ===== -->
+    <mxCell id="impl-note" vertex="1" parent="1"
+      value="&lt;b&gt;To implement: create  Layer 1/ai_query_shell.py&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Add to .env: AI_PROVIDER=gemini (or claude), GEMINI_API_KEY=... or CLAUDE_API_KEY=...&lt;br&gt;Add to requirements.txt: google-generativeai, anthropic, tabulate&lt;br&gt;Run: python ai_query_shell.py&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;fontSize=10;fontStyle=1;align=center;strokeDashArray=5;">
+      <mxGeometry x="30" y="1168" width="1040" height="50" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

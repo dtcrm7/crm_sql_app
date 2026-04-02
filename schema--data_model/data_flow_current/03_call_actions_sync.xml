@@ -1,0 +1,291 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1250" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ===== TITLE ===== -->
+    <mxCell id="title" vertex="1" parent="1"
+      value="B2B CRM — Diagram 3: Call Actions Sync &amp; Contact Lifecycle"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="0" y="18" width="1100" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="subtitle" vertex="1" parent="1"
+      value="Runs every morning before allocation engine (01:00 AM via Windows Task Scheduler)  |  Closes the daily loop: Agent Sheets → DB → contact_flag update"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#5A7A9A;">
+      <mxGeometry x="0" y="52" width="1100" height="18" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 1: AGENT SHEETS ===== -->
+    <mxCell id="lbl-sheets" vertex="1" parent="1" value="① AGENT GOOGLE SHEETS  (filled by agents during shift)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="79" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="wb1" vertex="1" parent="1"
+      value="Agent WB1&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;New Contact + FU1–FU5&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=12;">
+      <mxGeometry x="30" y="103" width="180" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="wb2" vertex="1" parent="1"
+      value="Agent WB2&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;New Contact + FU1–FU5&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=12;">
+      <mxGeometry x="230" y="103" width="180" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="wb-dot" vertex="1" parent="1" value="..."
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;fontColor=#6654c0;">
+      <mxGeometry x="420" y="103" width="40" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="wbn" vertex="1" parent="1"
+      value="Agent WBn&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;New Contact + FU1–FU5&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=12;">
+      <mxGeometry x="470" y="103" width="180" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="note-cols" vertex="1" parent="1"
+      value="&lt;b&gt;Agent fills per row:&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Call Duration · Call Status (renamed from Lead Category Mar 2026)&lt;br&gt;Current State · Remark&lt;br&gt;Recording · Transcript · Snapshot · Timestamp&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;align=left;">
+      <mxGeometry x="670" y="103" width="400" height="55" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 2: SYNC SCRIPT ===== -->
+    <mxCell id="lbl-sync" vertex="1" parent="1" value="② SYNC SCRIPT"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="178" width="160" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="sync" vertex="1" parent="1"
+      value="call_actions_sync.py&lt;div&gt;&lt;font style=&quot;font-size:11px;&quot;&gt;Reads all agent sub-sheet tabs  ·  Finds rows with Timestamp filled since last sync&lt;br&gt;Matches open allocation (same agent + same attempt_number)  ·  Processes each row&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=14;fontStyle=1;">
+      <mxGeometry x="150" y="201" width="700" height="75" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-wb1-sync" edge="1" parent="1" source="wb1" target="sync"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-wb2-sync" edge="1" parent="1" source="wb2" target="sync"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-wbn-sync" edge="1" parent="1" source="wbn" target="sync"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 3: THREE PARALLEL WRITES ===== -->
+    <mxCell id="lbl-writes" vertex="1" parent="1" value="③ DB WRITES  (executed per filled row)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="295" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- call_actions insert -->
+    <mxCell id="tbl-ca" vertex="1" parent="1"
+      value="INSERT → call_actions&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;1 row = 1 phone number dialed = 1 KPI unit&lt;br&gt;Stores: call_status · current_state · remark · recording_link · call_duration (seconds)&lt;br&gt;Note: column was &apos;Lead Category&apos; before Mar 2026 — now &apos;Call Status&apos;&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="30" y="318" width="320" height="85" as="geometry" />
+    </mxCell>
+
+    <!-- contact_flag update -->
+    <mxCell id="flag-upd" vertex="1" parent="1"
+      value="UPDATE → contacts.contact_flag&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Highest-priority flag wins — always&lt;br&gt;Map: call_status + current_state → flag&lt;br&gt;(e.g. DND → dnd, Referred → referred)&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=11;fontStyle=1;">
+      <mxGeometry x="390" y="318" width="320" height="85" as="geometry" />
+    </mxCell>
+
+    <!-- close allocation -->
+    <mxCell id="close-alloc" vertex="1" parent="1"
+      value="CLOSE → contact_allocations&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Final outcome? → set closed_at + close_reason&lt;br&gt;Increment attempt_number for next FU&lt;br&gt;close_reason: completed · reallocated · max_attempts&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="750" y="318" width="320" height="85" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-sync-ca" edge="1" parent="1" source="sync" target="tbl-ca"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-sync-flag" edge="1" parent="1" source="sync" target="flag-upd"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-sync-close" edge="1" parent="1" source="sync" target="close-alloc"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 4: SPECIAL PATHS ===== -->
+    <mxCell id="lbl-special" vertex="1" parent="1" value="④ SPECIAL HANDLING PATHS"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="422" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- Invalid Number path -->
+    <mxCell id="dec-inv" vertex="1" parent="1"
+      value="call_status = Invalid Number?"
+      style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;fontStyle=1;fontSize=11;">
+      <mxGeometry x="30" y="445" width="215" height="65" as="geometry" />
+    </mxCell>
+    <mxCell id="act-inv" vertex="1" parent="1"
+      value="Mark contact_phones.is_invalid = TRUE&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;specific phone flagged · contact not blocked&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;rounded=1;fontStyle=0;fontSize=11;">
+      <mxGeometry x="30" y="530" width="215" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="dec-allph" vertex="1" parent="1"
+      value="All phones for contact invalid?"
+      style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;fontStyle=1;fontSize=11;">
+      <mxGeometry x="30" y="598" width="215" height="65" as="geometry" />
+    </mxCell>
+    <mxCell id="act-invflag" vertex="1" parent="1"
+      value="contact_flag = 'invalid_number'&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;PERMANENT block · priority 10 (highest)&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="30" y="681" width="215" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-ca-decinv" edge="1" parent="1" source="tbl-ca" target="dec-inv"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-decinv-actinv" edge="1" parent="1" source="dec-inv" target="act-inv"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="137" y="530" /></Array></mxGeometry>
+    </mxCell>
+    <mxCell id="e-actinv-decall" edge="1" parent="1" source="act-inv" target="dec-allph"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-decall-invflag" edge="1" parent="1" source="dec-allph" target="act-invflag"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- FU5 exhaustion path -->
+    <mxCell id="dec-fu5" vertex="1" parent="1"
+      value="FU5 complete &amp;&amp; no Connected outcome?"
+      style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;fontStyle=1;fontSize=11;">
+      <mxGeometry x="750" y="445" width="215" height="65" as="geometry" />
+    </mxCell>
+    <mxCell id="act-3mo" vertex="1" parent="1"
+      value="contact_flag = 'attempt_3_months'&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;close_reason = max_attempts · blocked 3 months&lt;br&gt;CRM lab manually reallocates after 3 months&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="750" y="530" width="215" height="60" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-close-fu5" edge="1" parent="1" source="close-alloc" target="dec-fu5"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-fu5-3mo" edge="1" parent="1" source="dec-fu5" target="act-3mo"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+      <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="857" y="530" /></Array></mxGeometry>
+    </mxCell>
+
+    <!-- Sync Status write-back note -->
+    <mxCell id="note-sync" vertex="1" parent="1"
+      value="sync_status column written back to sheet: ✓ Synced DD/MM HH:MM"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;align=center;">
+      <mxGeometry x="330" y="455" width="400" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 5: CONTACT FLAG LIFECYCLE ===== -->
+    <mxCell id="lbl-flags" vertex="1" parent="1" value="⑤ CONTACT FLAG LIFECYCLE  (11 states · highest priority wins · allocation engine reads these flags daily)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="762" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- BLOCKED flags (permanent) -->
+    <mxCell id="lbl-blk" vertex="1" parent="1" value="PERMANENT BLOCK"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontStyle=1;fontColor=#6F0000;">
+      <mxGeometry x="30" y="784" width="220" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="f-invnum" vertex="1" parent="1"
+      value="invalid_number&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 10 · permanent&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="30" y="799" width="220" height="45" as="geometry" />
+    </mxCell>
+    <mxCell id="f-ref" vertex="1" parent="1"
+      value="referred&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 9 · permanent&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="30" y="851" width="220" height="45" as="geometry" />
+    </mxCell>
+    <mxCell id="f-lang" vertex="1" parent="1"
+      value="language_issue&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 8 · permanent&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="30" y="903" width="220" height="45" as="geometry" />
+    </mxCell>
+
+    <!-- SUCCESS flags → MQL entry -->
+    <mxCell id="lbl-suc" vertex="1" parent="1" value="SUCCESS  → MQL ENTRY"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontStyle=1;fontColor=#005700;">
+      <mxGeometry x="270" y="784" width="220" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="f-story" vertex="1" parent="1"
+      value="shared_story&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 7 · enters MQL pool&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="270" y="799" width="220" height="45" as="geometry" />
+    </mxCell>
+    <mxCell id="f-snap" vertex="1" parent="1"
+      value="snapshot_sent&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 6 · enters MQL pool&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="270" y="851" width="220" height="45" as="geometry" />
+    </mxCell>
+
+    <!-- TIMED BLOCK flags -->
+    <mxCell id="lbl-tmd" vertex="1" parent="1" value="TIMED BLOCK"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontStyle=1;fontColor=#7A3800;">
+      <mxGeometry x="510" y="784" width="220" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="f-dnd" vertex="1" parent="1"
+      value="dnd&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 5 · retry after 3 months&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="510" y="799" width="220" height="45" as="geometry" />
+    </mxCell>
+    <mxCell id="f-notint" vertex="1" parent="1"
+      value="not_interested&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 4 · retry after 2 months&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="510" y="851" width="220" height="45" as="geometry" />
+    </mxCell>
+    <mxCell id="f-a3mo" vertex="1" parent="1"
+      value="attempt_3_months&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 3 · retry after 3 months&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="510" y="903" width="220" height="45" as="geometry" />
+    </mxCell>
+
+    <!-- ACTIVE flags -->
+    <mxCell id="lbl-act" vertex="1" parent="1" value="ACTIVE"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontStyle=1;fontColor=#003366;">
+      <mxGeometry x="750" y="784" width="310" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="f-nfu" vertex="1" parent="1"
+      value="needs_followup&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 2 · stalled &gt;7 days · priority 1 in FU pool&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="750" y="799" width="310" height="45" as="geometry" />
+    </mxCell>
+    <mxCell id="f-inp" vertex="1" parent="1"
+      value="in_progress&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 1 · active · being worked by agent&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="750" y="851" width="310" height="45" as="geometry" />
+    </mxCell>
+    <mxCell id="f-fresh" vertex="1" parent="1"
+      value="fresh&lt;div&gt;&lt;font style=&quot;font-size:8px;&quot;&gt;rank 0 · never called · enters fresh pool&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;rounded=1;fontStyle=1;fontSize=10;">
+      <mxGeometry x="750" y="903" width="310" height="45" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 6: FEEDBACK LOOP ===== -->
+    <mxCell id="lbl-loop" vertex="1" parent="1" value="⑥ FEEDBACK LOOP"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="968" width="160" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="loop-note" vertex="1" parent="1"
+      value="Next morning: allocation_engine.py reads updated contact_flags from DB  →  blocked contacts excluded  →  eligible contacts enter fresh/FU pools  →  new sheets written  →  cycle repeats ♻"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=11;fontStyle=1;align=center;">
+      <mxGeometry x="30" y="991" width="1040" height="36" as="geometry" />
+    </mxCell>
+
+    <!-- edge from flag lifecycle to feedback loop -->
+    <mxCell id="e-flags-loop" edge="1" parent="1" source="f-fresh" target="loop-note"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

@@ -1,0 +1,180 @@
+<mxGraphModel dx="1042" dy="570" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="1150" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ===== TITLE ===== -->
+    <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E79;" value="B2B CRM — Diagram 2: Daily BD Allocation Cycle  (scripts/allocation_engine.py)" vertex="1">
+      <mxGeometry height="34" width="1000" x="0" y="18" as="geometry" />
+    </mxCell>
+    <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#5A7A9A;" value="Runs every day before agents&#39; shift (02:00 AM via Windows Task Scheduler)  |  Phase 2A ✅ Complete — configure AGENT_SHEET_IDS before first run" vertex="1">
+      <mxGeometry height="18" width="1000" x="0" y="52" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 1: DATABASE LAYER ===== -->
+    <mxCell id="lbl-db" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;" value="① DATABASE LAYER  (source of truth)" vertex="1">
+      <mxGeometry height="20" width="940" x="30" y="78" as="geometry" />
+    </mxCell>
+    <mxCell id="db" parent="1" style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontStyle=1;gradientColor=#7ea6e0;fontSize=20;" value="PostgreSQL · crm_db" vertex="1">
+      <mxGeometry height="70" width="500" x="250" y="103" as="geometry" />
+    </mxCell>
+    <mxCell id="view-avail" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;fontStyle=0;fontSize=11;" value="&lt;i&gt;agent_availability_today&lt;/i&gt;&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Active agents · not on leave · kpi_dialed&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="48" width="440" x="30" y="200" as="geometry" />
+    </mxCell>
+    <mxCell id="view-ready" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;fontStyle=0;fontSize=11;" value="&lt;i&gt;contacts_allocation_ready&lt;/i&gt;&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Phone-level pool · excludes blocked flags · invalid phones · open allocations&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="48" width="440" x="530" y="200" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-db-avail" edge="1" parent="1" source="db" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="view-avail">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-db-ready" edge="1" parent="1" source="db" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="view-ready">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 2: ALLOCATION ENGINE ===== -->
+    <mxCell id="lbl-engine" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;" value="② ALLOCATION ENGINE" vertex="1">
+      <mxGeometry height="20" width="210" x="30" y="268" as="geometry" />
+    </mxCell>
+    <mxCell id="engine" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=14;fontStyle=1;" value="allocation_engine.py&lt;div&gt;&lt;font style=&quot;font-size:11px;&quot;&gt;Iterates each active agent  ·  Flags stale contacts (&gt;7 days) → needs_followup&lt;br&gt;Calculates pool sizes  ·  Picks numbers  ·  Writes sheets&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="75" width="700" x="150" y="292" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-avail-eng" edge="1" parent="1" source="view-avail" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="engine">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-ready-eng" edge="1" parent="1" source="view-ready" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="engine">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 3: KPI SPLIT ===== -->
+    <mxCell id="lbl-kpi" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;" value="③ PER-AGENT KPI SPLIT  (values from agents table — no hardcoded numbers)" vertex="1">
+      <mxGeometry height="20" width="940" x="30" y="387" as="geometry" />
+    </mxCell>
+    <mxCell id="kpi-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;fontSize=12;align=center;" value="&lt;b&gt;fresh_count&lt;/b&gt;  = ROUND( kpi_dialed × fresh_pct / 100 )     →  default: 120 × 50% = &lt;b&gt;60 fresh&lt;/b&gt;&lt;br&gt;&lt;b&gt;followup_cap&lt;/b&gt; = ROUND( kpi_dialed × followup_pct / 100 )  →  default: 120 × 50% = &lt;b&gt;60 FU&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;DB CHECK enforces: fresh_pct + followup_pct = 100  |  Override per agent: SET kpi_dialed=80 or fresh_pct=70 — engine auto-adjusts&lt;/font&gt;" vertex="1">
+      <mxGeometry height="75" width="940" x="30" y="410" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-eng-kpi" edge="1" parent="1" source="engine" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="kpi-box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 4: CONTACT POOLS ===== -->
+    <mxCell id="lbl-pools" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;" value="④ CONTACT POOLS  (separated before writing)" vertex="1">
+      <mxGeometry height="20" width="940" x="30" y="505" as="geometry" />
+    </mxCell>
+    <mxCell id="pool-fresh" parent="1" style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=12;" value="Fresh Contact Pool&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;contact_flag = &#39;fresh&#39;&lt;br&gt;No prior allocation for any agent&lt;br&gt;attempt_number → 0 (New Contact tab)&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="85" width="450" x="30" y="528" as="geometry" />
+    </mxCell>
+    <mxCell id="pool-fu" parent="1" style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=12;" value="Follow-up Pool&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Open allocation for THIS agent&lt;br&gt;Priority 1: needs_followup (stalled &gt;7 days)&lt;br&gt;Priority 2: earliest fu_date · Priority 3: lowest attempt_number&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="85" width="450" x="520" y="528" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-kpi-fresh" edge="1" parent="1" source="kpi-box" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="pool-fresh">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-kpi-fu" edge="1" parent="1" source="kpi-box" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="pool-fu">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="shortfall" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;fontSize=11;fontStyle=1;align=center;" value="⚡  Shortfall Rule:  if FU_available &lt; followup_cap  →  remaining slots filled with extra Fresh contacts" vertex="1">
+      <mxGeometry height="32" width="940" x="30" y="630" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 5: OUTPUTS ===== -->
+    <mxCell id="lbl-out" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;" value="⑤ OUTPUTS  (written atomically per agent)" vertex="1">
+      <mxGeometry height="20" width="940" x="30" y="682" as="geometry" />
+    </mxCell>
+    <mxCell id="tbl-alloc" parent="1" style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;" value="contact_allocations  ← DB write-back&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;INSERT: contact_id · agent_id · attempt_number · allocated_date&lt;br&gt;UNIQUE(contact_id) WHERE closed_at IS NULL  →  one active alloc per contact&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="75" width="450" x="30" y="706" as="geometry" />
+    </mxCell>
+    <mxCell id="lbl-sheets" parent="1" style="text;html=1;strokeColor=none;fillColor=#E1D5E7;align=center;verticalAlign=middle;rounded=1;fontSize=11;fontStyle=1;fontColor=#3d1466;" value="Agent Google Sheets  (one spreadsheet per agent)" vertex="1">
+      <mxGeometry height="22" width="440" x="500" y="706" as="geometry" />
+    </mxCell>
+    <mxCell id="wb1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=12;" value="Agent WB1" vertex="1">
+      <mxGeometry height="45" width="120" x="510" y="762" as="geometry" />
+    </mxCell>
+    <mxCell id="wb2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=12;" value="Agent WB2" vertex="1">
+      <mxGeometry height="45" width="120" x="650" y="762" as="geometry" />
+    </mxCell>
+    <mxCell id="wb-dot" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=22;fontStyle=1;fontColor=#6654c0;" value="..." vertex="1">
+      <mxGeometry height="45" width="40" x="785" y="762" as="geometry" />
+    </mxCell>
+    <mxCell id="wbn" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=12;" value="Agent WBn" vertex="1">
+      <mxGeometry height="45" width="120" x="835" y="762" as="geometry" />
+    </mxCell>
+
+    <mxCell id="nwcnq5P6WdGQWGbraRwe-1" edge="1" parent="1" source="wbn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="wb-dot">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="805" y="784" />
+          <mxPoint x="805" y="784" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e-alloc-wb1" edge="1" parent="1" source="tbl-alloc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="wb1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-alloc-wb2" edge="1" parent="1" source="tbl-alloc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="wb2">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="710" y="742" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="e-alloc-wbn" edge="1" parent="1" source="tbl-alloc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="wbn">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="480" y="742" />
+          <mxPoint x="480" y="740" />
+          <mxPoint x="895" y="740" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="e-fresh-alloc" edge="1" parent="1" source="pool-fresh" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="tbl-alloc">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-fu-alloc" edge="1" parent="1" source="pool-fu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="tbl-alloc">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 6: AGENT SHEET STRUCTURE ===== -->
+    <mxCell id="lbl-subs" parent="1" style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;" value="⑥ AGENT SHEET STRUCTURE  (sub-sheets match attempt_number — engine routes each contact to correct tab)" vertex="1">
+      <mxGeometry height="20" width="940" x="30" y="820" as="geometry" />
+    </mxCell>
+    <mxCell id="ss0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontStyle=1;fontSize=11;" value="New Contact&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;attempt_number = 0&lt;br&gt;13 columns&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="55" width="130" x="30" y="844" as="geometry" />
+    </mxCell>
+    <mxCell id="ss1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontStyle=1;fontSize=11;" value="FU1&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;attempt_number = 1&lt;br&gt;16 cols + last call context&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="55" width="130" x="167" y="844" as="geometry" />
+    </mxCell>
+    <mxCell id="ss2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontStyle=1;fontSize=11;" value="FU2&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;attempt_number = 2&lt;br&gt;16 cols + last call context&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="55" width="130" x="304" y="844" as="geometry" />
+    </mxCell>
+    <mxCell id="ss3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontStyle=1;fontSize=11;" value="FU3&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;attempt_number = 3&lt;br&gt;16 cols + last call context&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="55" width="130" x="441" y="844" as="geometry" />
+    </mxCell>
+    <mxCell id="ss4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontStyle=1;fontSize=11;" value="FU4&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;attempt_number = 4&lt;br&gt;16 cols + last call context&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="55" width="130" x="578" y="844" as="geometry" />
+    </mxCell>
+    <mxCell id="ss5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontStyle=1;fontSize=11;" value="FU5&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;attempt_number = 5&lt;br&gt;Max — 6 total attempts&lt;/font&gt;&lt;/div&gt;" vertex="1">
+      <mxGeometry height="55" width="130" x="715" y="844" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-wb1-ss0" edge="1" parent="1" source="wb1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ss0">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-wb1-ss1" edge="1" parent="1" source="wb1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ss1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-wbn-ss5" edge="1" parent="1" source="wbn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ss5">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== FEEDBACK NOTE ===== -->
+    <mxCell id="note-agent" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=0;align=center;" value="BD agent fills during shift: Call Duration · Lead Category (Cold/Warm/Hot) · Call Status (Connected/DND/etc.) · Current State (Shared Story/Interested/Snapshot sent/etc.) · Remark · Recording Link · Transcript · Dream Snapshot · Timestamp" vertex="1">
+      <mxGeometry height="28" width="940" x="30" y="912" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>

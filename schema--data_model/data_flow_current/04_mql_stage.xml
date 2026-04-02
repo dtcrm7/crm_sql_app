@@ -1,0 +1,313 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="2000" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ===== TITLE ===== -->
+    <mxCell id="title" vertex="1" parent="1"
+      value="B2B CRM — Diagram 4: MQL Stage  (Phase 2B ✅ Implemented)"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="0" y="18" width="1000" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="subtitle" vertex="1" parent="1"
+      value="BD Stage = quantity (120 numbers/day)  |  MQL Stage = quality (up to 30 FUs per contact)  |  Run python mql_migration.py to import historical shared_story contacts on first DB setup"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#5A7A9A;">
+      <mxGeometry x="0" y="52" width="1000" height="18" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 1: TRIGGER ===== -->
+    <mxCell id="lbl-trig" vertex="1" parent="1" value="① TRIGGER  (BD Stage output — contacts that advanced)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="90" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="trig-story" vertex="1" parent="1"
+      value="contact_flag = 'shared_story'&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;BD agent shared company story&lt;br&gt;Contact expressed interest&lt;br&gt;Eligible until 2026-04-01*&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;rounded=1;fontStyle=1;fontSize=12;">
+      <mxGeometry x="120" y="114" width="260" height="70" as="geometry" />
+    </mxCell>
+    <mxCell id="trig-snap" vertex="1" parent="1"
+      value="contact_flag = 'snapshot_sent'&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;BD agent sent Dream Snapshot&lt;br&gt;Contact confirmed interest&lt;br&gt;Always eligible for MQL&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;rounded=1;fontStyle=1;fontSize=12;">
+      <mxGeometry x="490" y="114" width="260" height="70" as="geometry" />
+    </mxCell>
+    <mxCell id="snap-gate-note" vertex="1" parent="1"
+      value="* SNAPSHOT_GATE_DATE = 2026-04-01: after this date only snapshot_sent contacts enter MQL (shared_story no longer eligible). Internal rule — not shown to agents."
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333300;fontSize=9;fontStyle=2;align=center;">
+      <mxGeometry x="30" y="196" width="940" height="24" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 2: DB ===== -->
+    <mxCell id="lbl-db" vertex="1" parent="1" value="② POSTGRESQL — crm_db  (extended by 05_mql_migration.sql)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="235" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="db" vertex="1" parent="1"
+      value="PostgreSQL · crm_db"
+      style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontStyle=1;gradientColor=#7ea6e0;fontSize=20;">
+      <mxGeometry x="200" y="258" width="600" height="65" as="geometry" />
+    </mxCell>
+    <mxCell id="note-newflags" vertex="1" parent="1"
+      value="&lt;b&gt;New contact_flag values:&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;mql_in_progress · mql_qualified&lt;br&gt;mql_rejected · meeting_in_progress&lt;br&gt;BD engine excludes all four&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;align=left;">
+      <mxGeometry x="30" y="262" width="160" height="58" as="geometry" />
+    </mxCell>
+    <mxCell id="note-newtbl" vertex="1" parent="1"
+      value="&lt;b&gt;New tables:&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;mql_allocations · mql_analysis&lt;br&gt;mql_call_attempts · meetings&lt;br&gt;meeting_call_attempts&lt;br&gt;agents.team: bd / mql / sales&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;align=left;">
+      <mxGeometry x="815" y="258" width="155" height="65" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-story-db" edge="1" parent="1" source="trig-story" target="db"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-snap-db" edge="1" parent="1" source="trig-snap" target="db"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 3: MQL ALLOCATION ENGINE ===== -->
+    <mxCell id="lbl-eng" vertex="1" parent="1" value="③ MQL ALLOCATION ENGINE  (scripts/mql_allocation_engine.py  —  02:00 AM via Task Scheduler)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="343" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="mql-eng" vertex="1" parent="1"
+      value="mql_allocation_engine.py&lt;div&gt;&lt;font style=&quot;font-size:11px;&quot;&gt;Admin selects MQL agent + contact count from dashboard (or CLI --all-agents)  ·  Supports --contact-ids for manual exact selection&lt;br&gt;Finds eligible contacts (shared_story / snapshot_sent*) · No active mql_allocation · Agent hasn&apos;t worked them&lt;br&gt;Pre-fills BD context from last call_action  ·  Inserts mql_allocations  ·  Sets contact_flag → mql_in_progress&lt;br&gt;Writes contact rows to MQL FU 1-15 sheet tab (cols A–L pre-filled, FU blocks blank)&lt;br&gt;Creates / refreshes Instructions tab on every run with field descriptions + valid values&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=13;fontStyle=1;">
+      <mxGeometry x="60" y="366" width="880" height="105" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-db-eng" edge="1" parent="1" source="db" target="mql-eng"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 4: MQL AGENT SHEET ===== -->
+    <mxCell id="lbl-sh" vertex="1" parent="1" value="④ MQL AGENT GOOGLE SHEET  (one spreadsheet per agent — 3 tabs)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="491" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="tab-instr" vertex="1" parent="1"
+      value="Tab: Instructions (auto-created)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontStyle=1;fontSize=11;">
+      <mxGeometry x="60" y="515" width="220" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="tab1-header" vertex="1" parent="1"
+      value="Tab: MQL FU 1-15"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=13;">
+      <mxGeometry x="300" y="515" width="300" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="tab2-header" vertex="1" parent="1"
+      value="Tab: MQL FU 16-30"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b68ee;strokeColor=#6654c0;fontColor=#ffffff;fontStyle=1;fontSize=13;">
+      <mxGeometry x="620" y="515" width="300" height="30" as="geometry" />
+    </mxCell>
+
+    <mxCell id="tab1-detail" vertex="1" parent="1"
+      value="Contact info (cols A–L pre-filled)&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Unique ID · Company · Person · Title · Phone&lt;br&gt;BD Agent · BD Call Date · BD Status · BD Remark&lt;br&gt;Email · Recording · Snapshot&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;FU1–FU15 blocks (cols M onwards)&lt;br&gt;Each block = 11 cols agent fills during shift&lt;br&gt;Follow-up Stage (auto) · Sync Status (auto)&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontStyle=0;fontSize=10;">
+      <mxGeometry x="300" y="549" width="300" height="75" as="geometry" />
+    </mxCell>
+    <mxCell id="tab2-detail" vertex="1" parent="1"
+      value="Same contact row (A–L) duplicated&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;FU16–FU30 blocks&lt;br&gt;Same 11-col block structure&lt;br&gt;Sync Status = ✓ Synced when processed&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontStyle=0;fontSize=10;">
+      <mxGeometry x="620" y="549" width="300" height="75" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-eng-instr" edge="1" parent="1" source="mql-eng" target="tab-instr"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-eng-tab1" edge="1" parent="1" source="mql-eng" target="tab1-header"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-eng-tab2" edge="1" parent="1" source="mql-eng" target="tab2-header"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 5: SYNC ===== -->
+    <mxCell id="lbl-sync" vertex="1" parent="1" value="⑤ MQL SYNC  (scripts/mql_sync.py  —  01:00 AM via Task Scheduler, before allocation engine)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="644" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="mql-sync" vertex="1" parent="1"
+      value="mql_sync.py&lt;div&gt;&lt;font style=&quot;font-size:11px;&quot;&gt;Reads each MQL agent sheet (both tabs)  ·  Scans each FU block for filled Timestamp + no Sync Status&lt;br&gt;Inserts mql_call_attempts (one row per FU block): Lead Category · Call Status · Current State · Duration · Timestamp&lt;br&gt;Detects final outcome:&lt;br&gt;&amp;nbsp;&amp;nbsp;· Meeting Scheduled → INSERT into meetings table · appends row to shared Meetings sheet · writes Meeting Context + Meeting Context Normalized tabs · sets contact_flag = &apos;meeting_in_progress&apos; · keeps mql_allocation OPEN&lt;br&gt;&amp;nbsp;&amp;nbsp;· Picked Solution → contact_flag = &apos;mql_qualified&apos; · closes mql_allocation (close_reason=&apos;qualified&apos;)&lt;br&gt;&amp;nbsp;&amp;nbsp;· Not Interested / DND / Referred / Irrelevant → contact_flag = &apos;mql_rejected&apos; · close_reason=&apos;rejected&apos;&lt;br&gt;&amp;nbsp;&amp;nbsp;· Escalate → closes mql_allocation (close_reason=&apos;escalated&apos;) · admin reassigns from Escalation Queue in dashboard&lt;br&gt;If phone_uncertain=TRUE: locks confirmed phone + marks others invalid&lt;br&gt;Writes ✓ Synced to sheet cell after each row processed&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=12;fontStyle=1;">
+      <mxGeometry x="60" y="667" width="880" height="155" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-tab1-sync" edge="1" parent="1" source="tab1-header" target="mql-sync"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-tab2-sync" edge="1" parent="1" source="tab2-header" target="mql-sync"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 6: DB TABLES WRITTEN ===== -->
+    <mxCell id="lbl-dbt" vertex="1" parent="1" value="⑥ DB TABLES WRITTEN  (by mql_allocation_engine + mql_sync)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="842" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="tbl-mqlalloc" vertex="1" parent="1"
+      value="mql_allocations&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;contact_id · agent_id · allocated_date · campaign&lt;br&gt;close_reason: qualified / rejected / stalled / reallocated / escalated / bd_history&lt;br&gt;UNIQUE(contact_id) WHERE closed_at IS NULL&lt;br&gt;&lt;i&gt;bd_history = migration-created rows (exclude from live metrics)&lt;/i&gt;&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="30" y="865" width="285" height="85" as="geometry" />
+    </mxCell>
+    <mxCell id="tbl-mqlanal" vertex="1" parent="1"
+      value="mql_analysis&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;BD context (pre-filled): bd_agent · bd_call_date&lt;br&gt;bd_current_state · bd_remark · bd_recording_url&lt;br&gt;outcome · outcome_reason · outcome_notes&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="330" y="865" width="270" height="85" as="geometry" />
+    </mxCell>
+    <mxCell id="tbl-mqlcall" vertex="1" parent="1"
+      value="mql_call_attempts&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;contact_id · agent_id · follow_up_number (1-30)&lt;br&gt;phone_number_used · phone_uncertain (TRUE=multi-phone legacy)&lt;br&gt;lead_category · call_status · current_state&lt;br&gt;call_duration · called_at · synced_at&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="615" y="865" width="355" height="85" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-sync-alloc" edge="1" parent="1" source="mql-sync" target="tbl-mqlalloc"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-sync-anal" edge="1" parent="1" source="mql-sync" target="tbl-mqlanal"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-sync-call" edge="1" parent="1" source="mql-sync" target="tbl-mqlcall"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-eng-alloc" edge="1" parent="1" source="mql-eng" target="tbl-mqlalloc"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-eng-anal" edge="1" parent="1" source="mql-eng" target="tbl-mqlanal"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 7: MEETING TRACK ===== -->
+    <mxCell id="lbl-meet" vertex="1" parent="1" value="⑦ MEETING TRACK  (triggered when mql_sync detects Current State = 'Meeting Scheduled')"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="970" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="tbl-meetings" vertex="1" parent="1"
+      value="meetings&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;contact_id · mql_agent_id · campaign&lt;br&gt;scheduled_date · held_at · held_at_fu&lt;br&gt;status: scheduled / held / pushed / rescheduled / lost / solution_picked&lt;br&gt;conclusion · solution_proposed · solution_link · solution_sent_at · solution_picked_at&lt;br&gt;scheduled_at_fu · sheet_row_index&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="30" y="993" width="345" height="100" as="geometry" />
+    </mxCell>
+    <mxCell id="tbl-meetca" vertex="1" parent="1"
+      value="meeting_call_attempts&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;meeting_id · agent_id · follow_up_number&lt;br&gt;call_status · current_state · remark&lt;br&gt;recording_link · called_at&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="390" y="993" width="285" height="100" as="geometry" />
+    </mxCell>
+    <mxCell id="note-meetsheets" vertex="1" parent="1"
+      value="&lt;b&gt;Sheets created by mql_sync on Meeting Scheduled:&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;· Appends row to shared Meetings Google Sheet&lt;br&gt;· Writes Meeting Context tab (BD + MQL call summary)&lt;br&gt;· Writes Meeting Context Normalized tab (structured JSON format)&lt;br&gt;MQL allocation stays OPEN — same agent works meeting FUs in same sheet&lt;/font&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;align=left;">
+      <mxGeometry x="690" y="993" width="280" height="100" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-sync-meet" edge="1" parent="1" source="mql-sync" target="tbl-meetings"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#005700;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- meeting_sync.py -->
+    <mxCell id="lbl-meetsync" vertex="1" parent="1" value="  meeting_sync.py  (reads shared Meetings sheet → updates meetings table + auto-fills FU(n+1) in agent sheet with 'Meeting Held')"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="1105" width="940" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="meet-sync" vertex="1" parent="1"
+      value="meeting_sync.py&lt;div&gt;&lt;font style=&quot;font-size:11px;&quot;&gt;Admin fills shared Meetings sheet (held_date / conclusion / solution info)&lt;br&gt;Script reads sheet → updates meetings.status + meetings.held_at · Inserts meeting_call_attempts rows&lt;br&gt;Auto-fills FU(n+1) row in agent&apos;s MQL sheet with &apos;Meeting Held&apos; so agent can continue follow-up FUs&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=12;fontStyle=1;">
+      <mxGeometry x="60" y="1128" width="880" height="75" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-meetsheet-meetsync" edge="1" parent="1" source="tbl-meetings" target="meet-sync"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-meetsync-meetca" edge="1" parent="1" source="meet-sync" target="tbl-meetca"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== STEP 8: OUTCOME BRANCHES ===== -->
+    <mxCell id="lbl-out" vertex="1" parent="1" value="⑧ OUTCOME BRANCHES  (drives contact_flag — detected by mql_sync)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="1225" width="940" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="out-sql" vertex="1" parent="1"
+      value="SQL Qualified ✓&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Current State = 'Picked Solution'&lt;br&gt;→ contact_flag = 'mql_qualified'&lt;br&gt;→ close_reason = 'qualified'&lt;br&gt;→ Sales team pipeline&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="30" y="1248" width="205" height="85" as="geometry" />
+    </mxCell>
+    <mxCell id="out-meet" vertex="1" parent="1"
+      value="Meeting Track 📅&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Current State = 'Meeting Scheduled'&lt;br&gt;→ contact_flag = 'meeting_in_progress'&lt;br&gt;→ mql_allocation stays OPEN&lt;br&gt;→ meetings row created&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="250" y="1248" width="205" height="85" as="geometry" />
+    </mxCell>
+    <mxCell id="out-back" vertex="1" parent="1"
+      value="Still in Progress 🔄&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;No final outcome yet&lt;br&gt;→ contact_flag = 'mql_in_progress'&lt;br&gt;→ Agent continues FU blocks&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="470" y="1248" width="205" height="85" as="geometry" />
+    </mxCell>
+    <mxCell id="out-esc" vertex="1" parent="1"
+      value="Escalated ⬆&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Current State = 'Escalate'&lt;br&gt;→ close_reason = 'escalated'&lt;br&gt;→ Appears in Escalation Queue (dashboard)&lt;br&gt;→ Admin manually reassigns agent&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333300;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="690" y="1248" width="130" height="85" as="geometry" />
+    </mxCell>
+    <mxCell id="out-dis" vertex="1" parent="1"
+      value="Rejected ✗&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Not Interested / DND / Referred / Irrelevant&lt;br&gt;→ contact_flag = 'mql_rejected'&lt;br&gt;→ close_reason = 'rejected'&lt;br&gt;→ Blocked from BD and MQL&lt;/font&gt;&lt;/div&gt;"
+      style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#6F0000;rounded=1;fontStyle=1;fontSize=11;">
+      <mxGeometry x="830" y="1248" width="140" height="85" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-call-sql" edge="1" parent="1" source="tbl-mqlcall" target="out-sql"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-call-meet" edge="1" parent="1" source="tbl-mqlcall" target="out-meet"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-call-back" edge="1" parent="1" source="tbl-mqlcall" target="out-back"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-call-esc" edge="1" parent="1" source="tbl-mqlcall" target="out-esc"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-call-dis" edge="1" parent="1" source="tbl-mqlcall" target="out-dis"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- BD lock rule -->
+    <mxCell id="bd-lock" vertex="1" parent="1"
+      value="BD LOCK RULE: contacts_allocation_ready view excludes contact_flag IN ('mql_in_progress', 'mql_qualified', 'mql_rejected', 'meeting_in_progress') → BD engine cannot re-allocate any active MQL contacts"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;fontSize=10;fontStyle=1;align=center;">
+      <mxGeometry x="30" y="1353" width="940" height="36" as="geometry" />
+    </mxCell>
+
+    <!-- Daily run order note -->
+    <mxCell id="run-order" vertex="1" parent="1"
+      value="Daily Run Order:  01:00 AM mql_sync.py  →  01:30 AM call_actions_sync.py  →  02:00 AM mql_allocation_engine.py  →  02:30 AM allocation_engine.py  →  03:00 PM Agents start shift&lt;br&gt;meeting_sync.py: run manually after admin updates shared Meetings sheet  |  One-time historical import: python mql_migration.py"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FD;strokeColor=#6c8ebf;fontColor=#1F4E79;fontSize=10;fontStyle=0;align=center;">
+      <mxGeometry x="30" y="1403" width="940" height="40" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

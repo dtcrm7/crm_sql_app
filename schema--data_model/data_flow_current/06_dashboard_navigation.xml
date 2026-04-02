@@ -1,0 +1,206 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1050" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ===== TITLE ===== -->
+    <mxCell id="title" vertex="1" parent="1"
+      value="B2B CRM — Diagram 6: Dashboard Navigation  (13 pages · Role-based: admin / user)"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=20;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="0" y="18" width="1100" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="subtitle" vertex="1" parent="1"
+      value="streamlit run app.py  |  Custom sidebar groups + buttons choose current_page  |  Campaign + Stage selectors rendered once in app.py sidebar  |  Role stored in dashboard_users.role"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#5A7A9A;">
+      <mxGeometry x="0" y="52" width="1100" height="18" as="geometry" />
+    </mxCell>
+
+    <!-- ===== APP.PY ===== -->
+    <mxCell id="lbl-app" vertex="1" parent="1" value="① ENTRY POINT  (dashboard/app.py)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="90" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="app" vertex="1" parent="1"
+      value="app.py — Navigation Controller&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;st.set_page_config()  ·  get_campaign() → st.session_state[&apos;campaign&apos;]&lt;br&gt;Stage selectbox [BD, MQL] → st.session_state[&apos;stage_select&apos;]&lt;br&gt;Builds role-based groups dict  ·  Sidebar buttons set st.session_state[&apos;current_page&apos;]&lt;br&gt;run_page(current_page) loads selected page module&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;fontSize=14;fontStyle=1;">
+      <mxGeometry x="300" y="113" width="500" height="92" as="geometry" />
+    </mxCell>
+
+    <!-- Sidebar -->
+    <mxCell id="sidebar" vertex="1" parent="1"
+      value="Sidebar (rendered once)&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Campaign selector (from DB)&lt;br&gt;Stage selector: BD or MQL (selectbox)&lt;br&gt;Grouped nav buttons (Overview / Team / Allocation / Data / AI Query)&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;fontSize=11;fontStyle=1;">
+      <mxGeometry x="30" y="120" width="250" height="82" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-sidebar-app" edge="1" parent="1" source="sidebar" target="app"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Session state -->
+    <mxCell id="sess" vertex="1" parent="1"
+      value="st.session_state&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;campaign = 'consulting'&lt;br&gt;stage_select = 'BD' or 'MQL'&lt;br&gt;current_page = selected filename&lt;br&gt;role = 'admin' or 'user' (from dashboard_users)&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333300;fontSize=11;fontStyle=1;">
+      <mxGeometry x="820" y="120" width="250" height="82" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-app-sess" edge="1" parent="1" source="app" target="sess"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== BD BRANCH ===== -->
+    <mxCell id="lbl-bd" vertex="1" parent="1" value="② BD STAGE SELECTED  (BD) — Admin sees pages 0–9; User sees 0,1,2,6,8"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="213" width="490" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="bd-nav" vertex="1" parent="1"
+      value="📞 BD CRM  (section header in sidebar)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;fontSize=12;fontStyle=1;">
+      <mxGeometry x="30" y="236" width="490" height="30" as="geometry" />
+    </mxCell>
+
+    <mxCell id="bd-p0" vertex="1" parent="1" value="🏠 0_Home&lt;div style=&quot;font-size:8px;&quot;&gt;Today dials · KPI% · Pool health&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="30" y="280" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p1" vertex="1" parent="1" value="🔬 1_Pipeline&lt;div style=&quot;font-size:8px;&quot;&gt;Flag distribution · pool stats&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="130" y="280" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p2" vertex="1" parent="1" value="👤 2_Contacts&lt;div style=&quot;font-size:8px;&quot;&gt;Contact search + history&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="230" y="280" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p3" vertex="1" parent="1" value="👥 3_Agents&lt;div style=&quot;font-size:8px;&quot;&gt;Agent mgmt + leave log&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="330" y="280" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p4" vertex="1" parent="1" value="⚙️ 4_Allocation&lt;div style=&quot;font-size:8px;&quot;&gt;Run allocation engine&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="30" y="334" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p5" vertex="1" parent="1" value="📋 5_Alloc_Manager&lt;div style=&quot;font-size:8px;&quot;&gt;Manage open allocations&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="130" y="334" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p6" vertex="1" parent="1" value="📊 6_Dashboard&lt;div style=&quot;font-size:8px;&quot;&gt;Agent KPI charts&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="230" y="334" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p7" vertex="1" parent="1" value="📤 7_Upload&lt;div style=&quot;font-size:8px;&quot;&gt;CSV upload + etl.py&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="330" y="334" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p8" vertex="1" parent="1" value="🤖 8_AI_Query&lt;div style=&quot;font-size:8px;&quot;&gt;Natural language → SQL&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="30" y="388" width="92" height="44" as="geometry" /></mxCell>
+    <mxCell id="bd-p9" vertex="1" parent="1" value="🔁 9_Reallocation&lt;div style=&quot;font-size:8px;&quot;&gt;Filter-based realloc · campaigns&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=10;fontStyle=1;"><mxGeometry x="130" y="388" width="92" height="44" as="geometry" /></mxCell>
+
+    <mxCell id="e-app-bdnav" edge="1" parent="1" source="app" target="bd-nav"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== MQL BRANCH ===== -->
+    <mxCell id="lbl-mql" vertex="1" parent="1" value="③ MQL STAGE SELECTED  (MQL) — Admin sees 0,1,3,8,10,11,12; User sees 0,1,8,12"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="580" y="213" width="490" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="mql-nav" vertex="1" parent="1"
+      value="📈 MQL CRM  (section header in sidebar)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=12;fontStyle=1;">
+      <mxGeometry x="580" y="236" width="490" height="30" as="geometry" />
+    </mxCell>
+
+    <mxCell id="mql-p0" vertex="1" parent="1" value="🏠 0_Home&lt;div style=&quot;font-size:8px;&quot;&gt;MQL view: allocated · qualified · rejected&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=1;"><mxGeometry x="580" y="280" width="110" height="44" as="geometry" /></mxCell>
+    <mxCell id="mql-p1" vertex="1" parent="1" value="🔬 1_Pipeline&lt;div style=&quot;font-size:8px;&quot;&gt;MQL pool health&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=1;"><mxGeometry x="698" y="280" width="110" height="44" as="geometry" /></mxCell>
+    <mxCell id="mql-p3" vertex="1" parent="1" value="👥 3_Agents&lt;div style=&quot;font-size:8px;&quot;&gt;MQL agent stats&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=1;"><mxGeometry x="816" y="280" width="110" height="44" as="geometry" /></mxCell>
+    <mxCell id="mql-p8" vertex="1" parent="1" value="🤖 8_AI_Query&lt;div style=&quot;font-size:8px;&quot;&gt;Natural language → SQL&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=1;"><mxGeometry x="934" y="280" width="110" height="44" as="geometry" /></mxCell>
+
+    <mxCell id="mql-p10" vertex="1" parent="1"
+      value="📈 10_MQL_Allocation&lt;div style=&quot;font-size:8px;&quot;&gt;Allocate contacts to MQL agents&lt;br&gt;Supports manual contact_ids selection&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=1;">
+      <mxGeometry x="580" y="334" width="145" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="mql-p11" vertex="1" parent="1"
+      value="📊 11_MQL_Manager&lt;div style=&quot;font-size:8px;&quot;&gt;Active allocations · Escalation Queue&lt;br&gt;Manual agent reassignment&lt;br&gt;Meeting pipeline tracking&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=1;">
+      <mxGeometry x="737" y="334" width="145" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="mql-p12" vertex="1" parent="1"
+      value="📈 12_MQL_Dashboard&lt;div style=&quot;font-size:8px;&quot;&gt;MQL KPI charts&lt;br&gt;Qualified / Rejected / Meeting rates&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=10;fontStyle=1;">
+      <mxGeometry x="894" y="334" width="145" height="55" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-app-mqlnav" edge="1" parent="1" source="app" target="mql-nav"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== SESSION STATE USAGE ===== -->
+    <mxCell id="lbl-sess" vertex="1" parent="1" value="④ HOW EACH PAGE READS CAMPAIGN  (no sidebar rendered in pages — all read from session_state)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="460" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="page-code" vertex="1" parent="1"
+      value="Every page (0_Home.py … 12_MQL_Dashboard.py)&lt;div&gt;&lt;font style=&quot;font-size:11px; font-family: monospace;&quot;&gt;campaign = st.session_state.get(&apos;campaign&apos;, &apos;consulting&apos;)&lt;br&gt;# use in queries: WHERE c.campaign = %(campaign)s&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;No st.set_page_config() · No get_campaign() sidebar render · No cross-page duplication&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333300;fontSize=12;fontStyle=0;">
+      <mxGeometry x="200" y="483" width="700" height="70" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-sess-page" edge="1" parent="1" source="sess" target="page-code"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== HOME PAGE BEHAVIOUR ===== -->
+    <mxCell id="lbl-home" vertex="1" parent="1" value="⑤ HOME PAGE ADAPTS TO STAGE  (pages/0_Home.py)"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="574" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="home-bd" vertex="1" parent="1"
+      value="📞 BD Home&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Today's dials · Connected rate · DND · KPI%&lt;br&gt;BD agents table: dialled / connected / KPI%&lt;br&gt;Pool health: callable contacts + callable phones&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=11;fontStyle=1;">
+      <mxGeometry x="30" y="597" width="470" height="80" as="geometry" />
+    </mxCell>
+
+    <mxCell id="home-mql" vertex="1" parent="1"
+      value="📈 MQL Home&lt;div&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Allocated · Active · Called today · Qualified · Rejected&lt;br&gt;MQL agents table: active contacts / called today&lt;br&gt;MQL pool: eligible / unallocated / in_progress / meeting_in_progress / qualified / rejected&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=11;fontStyle=1;">
+      <mxGeometry x="560" y="597" width="510" height="80" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e-page-homebdl" edge="1" parent="1" source="page-code" target="home-bd"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-page-homemql" edge="1" parent="1" source="page-code" target="home-mql"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- Condition note -->
+    <mxCell id="cond-note" vertex="1" parent="1"
+      value="stage = st.session_state.get('stage_select', 'BD') — if stage == 'MQL' use MQL groups, else BD groups"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;fontSize=10;fontStyle=1;align=center;">
+      <mxGeometry x="30" y="692" width="1040" height="28" as="geometry" />
+    </mxCell>
+
+    <!-- ===== NOTABLE FEATURES ===== -->
+    <mxCell id="lbl-feat" vertex="1" parent="1" value="⑥ NOTABLE PAGE FEATURES"
+      style="text;html=1;strokeColor=none;fillColor=#E8F4FD;align=left;verticalAlign=middle;rounded=1;fontSize=10;fontStyle=1;fontColor=#1F4E79;">
+      <mxGeometry x="30" y="738" width="1040" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="feat-realloc" vertex="1" parent="1"
+      value="9_Reallocation (BD branch, admin only)&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Filter contacts by bd_category, flag, date range&lt;br&gt;Batch reallocate to selected agent&lt;br&gt;Reallocation campaigns tracked in reallocation_campaigns table&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#005700;fontSize=11;fontStyle=1;">
+      <mxGeometry x="30" y="761" width="240" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="feat-mqalloc" vertex="1" parent="1"
+      value="10_MQL_Allocation&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Select MQL agent + contact count&lt;br&gt;Optional: enter specific contact_ids for manual allocation&lt;br&gt;Preview before committing · calls mql_allocation_engine.py&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=11;fontStyle=1;">
+      <mxGeometry x="290" y="761" width="240" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="feat-mqmgr" vertex="1" parent="1"
+      value="11_MQL_Manager&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Active allocation view per agent + contact&lt;br&gt;Escalation Queue: contacts with close_reason=&apos;escalated&apos;&lt;br&gt;Admin manually reassigns escalated contacts to new agent&lt;br&gt;Meeting pipeline: scheduled / held / lost / solution_picked view&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3d1466;fontSize=11;fontStyle=1;">
+      <mxGeometry x="550" y="761" width="260" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="feat-role" vertex="1" parent="1"
+      value="Role-based Access&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;dashboard_users.role = 'admin' or 'user'&lt;br&gt;admin: full stage-specific groups&lt;br&gt;user: restricted pages (no admin allocation pages)&lt;br&gt;Server-side guard blocks direct URL access&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#7A3800;fontSize=11;fontStyle=1;">
+      <mxGeometry x="830" y="761" width="240" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- Explicit 13-page map -->
+    <mxCell id="page-map" vertex="1" parent="1"
+      value="13-page map (0–12):&lt;div&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;0 Home (shared) · 1 Pipeline (shared) · 2 Contacts (BD) · 3 Agents (BD + MQL admin) · 4 Allocation (BD admin)&lt;br&gt;5 Allocation Manager (BD admin) · 6 Dashboard (BD) · 7 Upload (BD admin) · 8 AI Query (shared)&lt;br&gt;9 Reallocation (BD admin) · 10 MQL Allocation (MQL admin) · 11 MQL Manager (MQL admin) · 12 MQL Dashboard (MQL)&lt;/font&gt;&lt;/div&gt;"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#003366;fontSize=10;fontStyle=1;align=left;">
+      <mxGeometry x="30" y="855" width="1040" height="50" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>
