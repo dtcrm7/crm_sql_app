@@ -90,13 +90,11 @@ def _load_contact_stats(campaign: str) -> pd.DataFrame:
                    OR EXISTS (SELECT 1 FROM mql_allocations ma WHERE ma.contact_id = c.id)
             )                                                               AS snapshot_sent,
             COUNT(DISTINCT c.id) FILTER (
-                WHERE c.contact_flag IN ('bd_qualified', 'mql_qualified', 'meeting_in_progress')
-                   OR mc.confirmed_snapshot_attempts > 0
-                   OR EXISTS (
-                       SELECT 1 FROM mql_call_attempts mca 
-                       WHERE mca.contact_id = c.id 
-                         AND mca.current_state IN ('Meeting Scheduled', 'Solution Picked')
-                   )
+                WHERE EXISTS (
+                    SELECT 1 FROM mql_allocations ma 
+                    WHERE ma.contact_id = c.id 
+                      AND ma.close_reason IS DISTINCT FROM 'bd_history'
+                )
             )                                                               AS mql_active,
             COUNT(DISTINCT c.id) FILTER (
                 WHERE c.contact_flag = 'mql_qualified'
