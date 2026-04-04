@@ -1,0 +1,365 @@
+[16:17:04] 🐍 Python dependencies were installed from /mount/src/crm_sql_app/requirements.txt using uv.
+
+Check if streamlit is installed
+
+Streamlit is already installed
+
+[16:17:05] 📦 Processed dependencies!
+
+
+
+
+2026-04-04 16:17:21  INFO      crm.db — DB: opening persistent connection
+
+2026-04-04 16:17:31.636 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:17:31.644 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:17:31.650 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:17:31.683 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:17:32.269 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:17:32.278 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:17:32.278 Serialization of dataframe to Arrow table was unsuccessful. Applying automatic fixes for column types to make the dataframe Arrow-compatible.
+
+Traceback (most recent call last):
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/streamlit/dataframe_util.py", line 818, in convert_pandas_df_to_arrow_bytes
+
+    table = pa.Table.from_pandas(df)
+
+  File "pyarrow/table.pxi", line 4796, in pyarrow.lib.Table.from_pandas
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 651, in dataframe_to_arrays
+
+    arrays = [convert_column(c, f)
+
+              ~~~~~~~~~~~~~~^^^^^^
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 639, in convert_column
+
+    raise e
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 633, in convert_column
+
+    result = pa.array(col, type=type_, from_pandas=True, safe=safe)
+
+  File "pyarrow/array.pxi", line 365, in pyarrow.lib.array
+
+  File "pyarrow/array.pxi", line 91, in pyarrow.lib._ndarray_to_array
+
+    check_status(NdarrayToArrow(pool, values, mask, from_pandas,
+
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+
+pyarrow.lib.ArrowTypeError: ("Expected bytes, got a 'int' object", 'Conversion failed for column Ready for allocation now with type object')
+
+2026-04-04 16:18:56.145 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:18:56.153 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:18:56.159 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:18:56.194 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:18:56.780 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:18:56.790 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:18:56.790 Serialization of dataframe to Arrow table was unsuccessful. Applying automatic fixes for column types to make the dataframe Arrow-compatible.
+
+Traceback (most recent call last):
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/streamlit/dataframe_util.py", line 818, in convert_pandas_df_to_arrow_bytes
+
+    table = pa.Table.from_pandas(df)
+
+  File "pyarrow/table.pxi", line 4796, in pyarrow.lib.Table.from_pandas
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 651, in dataframe_to_arrays
+
+    arrays = [convert_column(c, f)
+
+              ~~~~~~~~~~~~~~^^^^^^
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 639, in convert_column
+
+    raise e
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 633, in convert_column
+
+    result = pa.array(col, type=type_, from_pandas=True, safe=safe)
+
+  File "pyarrow/array.pxi", line 365, in pyarrow.lib.array
+
+    result = _ndarray_to_array(values, mask, type, c_from_pandas, safe,
+
+  File "pyarrow/array.pxi", line 91, in pyarrow.lib._ndarray_to_array
+
+    check_status(NdarrayToArrow(pool, values, mask, from_pandas,
+
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+
+pyarrow.lib.ArrowTypeError: ("Expected bytes, got a 'int' object", 'Conversion failed for column Ready for allocation now with type object')
+
+2026-04-04 16:21:19  ERROR     crm.db — query_df() failed.
+
+SQL (first 400 chars): SELECT name FROM campaigns WHERE is_active = TRUE ORDER BY name
+
+Params: None
+
+Traceback (most recent call last):
+
+  File "/mount/src/crm_sql_app/dashboard/utils/db.py", line 104, in query_df
+
+    with get_conn() as conn:
+
+         ~~~~~~~~^^
+
+psycopg2.ProgrammingError: the connection cannot be re-entered recursively
+
+
+2026-04-04 16:21:21.514 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:21:21.520 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:21:21.526 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:21:21.561 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:21:22.146 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:21:22.154 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:21:22.154 Serialization of dataframe to Arrow table was unsuccessful. Applying automatic fixes for column types to make the dataframe Arrow-compatible.
+
+Traceback (most recent call last):
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/streamlit/dataframe_util.py", line 818, in convert_pandas_df_to_arrow_bytes
+
+    table = pa.Table.from_pandas(df)
+
+  File "pyarrow/table.pxi", line 4796, in pyarrow.lib.Table.from_pandas
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 651, in dataframe_to_arrays
+
+    arrays = [convert_column(c, f)
+
+              ~~~~~~~~~~~~~~^^^^^^
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 639, in convert_column
+
+    raise e
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 633, in convert_column
+
+    result = pa.array(col, type=type_, from_pandas=True, safe=safe)
+
+  File "pyarrow/array.pxi", line 365, in pyarrow.lib.array
+
+    result = _ndarray_to_array(values, mask, type, c_from_pandas, safe,
+
+  File "pyarrow/array.pxi", line 91, in pyarrow.lib._ndarray_to_array
+
+    check_status(NdarrayToArrow(pool, values, mask, from_pandas,
+
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+
+pyarrow.lib.ArrowTypeError: ("Expected bytes, got a 'int' object", 'Conversion failed for column Ready for allocation now with type object')
+
+2026-04-04 16:22:16  INFO      crm.db — DB: opening persistent connection
+
+2026-04-04 16:22:26.236 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:22:26.244 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:22:26.251 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:22:26.284 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:22:26.872 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'` or specify an integer width.
+
+2026-04-04 16:22:26.880 Please replace `use_container_width` with `width`.
+
+
+`use_container_width` will be removed after 2025-12-31.
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+
+2026-04-04 16:22:26.881 Serialization of dataframe to Arrow table was unsuccessful. Applying automatic fixes for column types to make the dataframe Arrow-compatible.
+
+Traceback (most recent call last):
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/streamlit/dataframe_util.py", line 818, in convert_pandas_df_to_arrow_bytes
+
+    table = pa.Table.from_pandas(df)
+
+  File "pyarrow/table.pxi", line 4796, in pyarrow.lib.Table.from_pandas
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 651, in dataframe_to_arrays
+
+    arrays = [convert_column(c, f)
+
+              ~~~~~~~~~~~~~~^^^^^^
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 639, in convert_column
+
+    raise e
+
+  File "/home/adminuser/venv/lib/python3.13/site-packages/pyarrow/pandas_compat.py", line 633, in convert_column
+
+    result = pa.array(col, type=type_, from_pandas=True, safe=safe)
+
+  File "pyarrow/array.pxi", line 365, in pyarrow.lib.array
+
+    result = _ndarray_to_array(values, mask, type, c_from_pandas, safe,
+
+  File "pyarrow/array.pxi", line 91, in pyarrow.lib._ndarray_to_array
+
+    check_status(NdarrayToArrow(pool, values, mask, from_pandas,
+
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+
+pyarrow.lib.ArrowTypeError: ("Expected bytes, got a 'int' object", 'Conversion failed for column Ready for allocation now with type object')

@@ -114,6 +114,9 @@ FLAG_MAP = {
     "Meeting Scheduled":            "meeting_in_progress",
     "Meeting Held":                 "meeting_in_progress",
     "Solution Sent":                "meeting_in_progress",
+    # MQL confirmed (True MQL)
+    "Snapshot Confirmed":           "bd_qualified",
+    "Dream Snapshot Confirmed":     "bd_qualified",
     # SQL outcomes — close allocation
     "Solution Picked":              "mql_qualified",
     "Picked Solution":              "mql_qualified",

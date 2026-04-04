@@ -40,7 +40,7 @@ import psycopg2
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv()
+load_dotenv(PROJECT_ROOT / ".env")
 
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),

@@ -76,22 +76,19 @@ def _get_db_config() -> dict[str, Any]:
 def _persistent_conn() -> psycopg2.extensions.connection:
     """One DB connection per Streamlit server process, reused across all reruns."""
     logger.info("DB: opening persistent connection")
-    conn = psycopg2.connect(**_get_db_config())
+    config = _get_db_config()
+    config["options"] = "-c statement_timeout=60000"   # 60 seconds
+    conn = psycopg2.connect(**config)
     conn.autocommit = False
     return conn
 
 
 def get_conn() -> psycopg2.extensions.connection:
-    """Return the cached connection, transparently reconnecting if it closed."""
-    conn = _persistent_conn()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT 1")
-        conn.rollback()          # don't leave an idle transaction open
-    except Exception:
-        logger.warning("DB: connection lost — reconnecting")
-        _persistent_conn.clear()
-        conn = _persistent_conn()
+    """Return a new DB connection."""
+    config = _get_db_config()
+    config["options"] = "-c statement_timeout=60000"   # 60 seconds
+    conn = psycopg2.connect(**config)
+    conn.autocommit = False
     return conn
 
 

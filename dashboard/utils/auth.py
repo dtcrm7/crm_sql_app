@@ -12,7 +12,7 @@ Usage in any page:
     log_action("allocation_run", "agent_id=5, count=12")
 
 Login persists across browser refreshes via a signed cookie (30-day expiry).
-Requires: pip install streamlit-cookies-controller
+Requires: pip install extra-streamlit-components
 """
 
 from __future__ import annotations
@@ -72,17 +72,17 @@ def _verify_token(token: str) -> Optional[str]:
 # ── Cookie controller (lazy singleton per session) ────────────
 
 def _get_controller():
-    """Return the CookieController for this Streamlit session."""
+    """Return the CookieManager for this Streamlit session."""
     if "cookie_controller" not in st.session_state:
         try:
-            from streamlit_cookies_controller import CookieController
-            st.session_state["cookie_controller"] = CookieController()
+            import extra_streamlit_components as stx
+            st.session_state["cookie_controller"] = stx.CookieManager()
         except ImportError:
             st.session_state["cookie_controller"] = None
             logger.warning(
-                "streamlit-cookies-controller not installed — "
+                "extra-streamlit-components not installed — "
                 "login will not persist across browser refreshes. "
-                "Run: pip install streamlit-cookies-controller"
+                "Run: pip install extra-streamlit-components"
             )
     return st.session_state["cookie_controller"]
 
@@ -114,6 +114,7 @@ def _fetch_user(username: str) -> Optional[dict]:
             """, (username.strip(),))
             row = cur.fetchone()
         if not row:
+            logger.warning("_fetch_user: no row found for username=%s", username)
             return None
         return {
             "username":      row[0],
@@ -123,7 +124,7 @@ def _fetch_user(username: str) -> Optional[dict]:
             "is_active":     row[4],
         }
     except Exception as e:
-        logger.error(f"_fetch_user failed: {e}")
+        logger.error("_fetch_user failed for username=%s: %s", username, e, exc_info=True)
         return None
 
 
@@ -178,7 +179,7 @@ def logout() -> None:
     ctrl = _get_controller()
     if ctrl is not None:
         try:
-            ctrl.remove(COOKIE_NAME)
+            ctrl.delete(COOKIE_NAME)
         except Exception:
             pass
 
@@ -210,7 +211,7 @@ def init_cookie_auth() -> None:
     if not username:
         # Token expired or invalid — clear it
         try:
-            ctrl.remove(COOKIE_NAME)
+            ctrl.delete(COOKIE_NAME)
         except Exception:
             pass
         return
@@ -219,7 +220,7 @@ def init_cookie_auth() -> None:
     user = _fetch_user(username)
     if not user or not user["is_active"]:
         try:
-            ctrl.remove(COOKIE_NAME)
+            ctrl.delete(COOKIE_NAME)
         except Exception:
             pass
         return
@@ -262,6 +263,14 @@ def show_login_form() -> None:
                 st.error("Enter both username and password.")
                 return
 
+            # Test DB connectivity before attempting login
+            try:
+                get_conn()
+            except Exception as e:
+                logger.error("Login DB connection failed: %s", e, exc_info=True)
+                st.error("Cannot connect to database. Please check your configuration.")
+                return
+
             user = _fetch_user(username)
 
             if user is None or not user["is_active"]:
@@ -280,10 +289,11 @@ def show_login_form() -> None:
             ctrl = _get_controller()
             if ctrl is not None:
                 try:
+                    import datetime
                     ctrl.set(
                         COOKIE_NAME,
                         _make_token(user["username"]),
-                        max_age=COOKIE_EXPIRY_DAYS * 86400,
+                        expires_at=datetime.datetime.now() + datetime.timedelta(days=COOKIE_EXPIRY_DAYS),
                     )
                 except Exception as e:
                     logger.warning(f"Cookie set failed (non-fatal): {e}")

@@ -31,59 +31,78 @@ with st.sidebar:
 # ─────────────────────────────────────────────────────────────────────────────
 # QUERY 1 — All contact-flag stats in one round-trip
 # ─────────────────────────────────────────────────────────────────────────────
-@st.cache_data(ttl=60, show_spinner=False)
+@st.cache_data(ttl=10, show_spinner=False)
 def _load_contact_stats(campaign: str) -> pd.DataFrame:
     """
     Single query covering: funnel counts, pool health, MQL pipeline,
     block accumulation, velocity, and pool runway estimate.
     """
     return query_df("""
+        WITH bd_counts AS (
+            SELECT
+                contact_id,
+                COUNT(*)                                            AS total_attempts,
+                COUNT(*) FILTER (WHERE call_status = 'Connected')   AS connected_attempts,
+                COUNT(*) FILTER (WHERE current_state = 'Interested') AS interested_attempts,
+                COUNT(*) FILTER (WHERE call_status = 'Invalid Number') AS invalid_attempts,
+                COUNT(*) FILTER (WHERE call_status = 'Do not Disturb') AS dnd_attempts,
+                COUNT(*) FILTER (WHERE current_state IN ('Not interested', 'Not Interested')) AS not_int_attempts,
+                COUNT(*) FILTER (WHERE call_status = 'Referred' OR current_state IN ('Referred', 'Reffered')) AS referred_attempts,
+                COUNT(*) FILTER (WHERE current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months')) AS realloc_3m_attempts,
+                COUNT(*) FILTER (WHERE current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months') AND called_at <= NOW() - INTERVAL '90 days') AS realloc_3m_ready_attempts,
+                MIN(called_at)                                      AS first_called_at,
+                MIN(called_at) FILTER (WHERE current_state = 'Shared Story') AS first_story_at,
+                MIN(called_at) FILTER (WHERE current_state IN ('Snapshot Sent', 'Dream Snapshot Sent')) AS first_snapshot_at
+            FROM call_actions
+            GROUP BY contact_id
+        ),
+        mql_counts AS (
+            SELECT
+                mca.contact_id,
+                COUNT(*) FILTER (WHERE mca.call_status = 'Invalid Number') AS invalid_attempts,
+                COUNT(*) FILTER (WHERE mca.call_status = 'Do not Disturb') AS dnd_attempts,
+                COUNT(*) FILTER (WHERE mca.current_state = 'Not interested') AS not_int_attempts,
+                COUNT(*) FILTER (WHERE mca.current_state IN ('Referred', 'Reffered')) AS referred_attempts,
+                COUNT(*) FILTER (WHERE mca.current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months')) AS realloc_3m_attempts,
+                COUNT(*) FILTER (WHERE mca.current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months') AND mca.called_at <= NOW() - INTERVAL '90 days') AS realloc_3m_ready_attempts,
+                COUNT(*) FILTER (WHERE mca.current_state IN ('Dream Snapshot Confirmed', 'Snapshot Confirmed')) AS confirmed_snapshot_attempts
+            FROM mql_call_attempts mca
+            JOIN mql_allocations ma ON ma.id = mca.allocation_id
+            JOIN agents am ON am.id = mca.agent_id
+            WHERE (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
+              AND ma.close_reason IS DISTINCT FROM 'bd_history'
+              AND am.team = 'mql'
+            GROUP BY mca.contact_id
+        )
         SELECT
-            -- ── Funnel ────────────────────────────────────────────────────
+            -- ── Funnel (Cumulative: Ever Reached) ──────────────────────────
             COUNT(DISTINCT c.id)                                            AS total,
+            COUNT(DISTINCT c.id) FILTER (WHERE bc.total_attempts > 0)       AS reached,
+            COUNT(DISTINCT c.id) FILTER (WHERE bc.connected_attempts > 0)   AS connected,
+            COUNT(DISTINCT c.id) FILTER (WHERE bc.interested_attempts > 0)  AS interested,
             COUNT(DISTINCT c.id) FILTER (
-                WHERE EXISTS (
-                    SELECT 1 FROM call_actions ca WHERE ca.contact_id = c.id
-                )
-            )                                                               AS reached,
-            COUNT(DISTINCT c.id) FILTER (
-                WHERE EXISTS (
-                    SELECT 1 FROM call_actions ca
-                    WHERE ca.contact_id = c.id AND ca.call_status = 'Connected'
-                )
-            )                                                               AS connected,
-            COUNT(DISTINCT c.id) FILTER (
-                WHERE EXISTS (
-                    SELECT 1 FROM call_actions ca
-                    WHERE ca.contact_id = c.id AND ca.current_state = 'Interested'
-                )
-            )                                                               AS interested,
-            COUNT(DISTINCT c.id) FILTER (
-                WHERE c.contact_flag IN (
-                    'shared_story','snapshot_sent',
-                    'mql_in_progress','mql_qualified','mql_rejected'
-                )
+                WHERE bc.first_story_at IS NOT NULL 
+                   OR c.contact_flag IN ('shared_story', 'snapshot_sent', 'bd_qualified', 'mql_qualified', 'meeting_in_progress', 'mql_rejected')
             )                                                               AS shared_story,
             COUNT(DISTINCT c.id) FILTER (
-                WHERE c.contact_flag IN (
-                    'snapshot_sent','mql_in_progress','mql_qualified','mql_rejected'
-                )
+                WHERE bc.first_snapshot_at IS NOT NULL
+                   OR c.contact_flag IN ('snapshot_sent', 'bd_qualified', 'mql_qualified', 'meeting_in_progress', 'mql_rejected')
+                   OR EXISTS (SELECT 1 FROM mql_allocations ma WHERE ma.contact_id = c.id)
             )                                                               AS snapshot_sent,
             COUNT(DISTINCT c.id) FILTER (
-                WHERE c.contact_flag IN ('mql_in_progress','mql_qualified')
+                WHERE c.contact_flag IN ('bd_qualified', 'mql_qualified', 'meeting_in_progress')
+                   OR mc.confirmed_snapshot_attempts > 0
+                   OR EXISTS (
+                       SELECT 1 FROM mql_call_attempts mca 
+                       WHERE mca.contact_id = c.id 
+                         AND mca.current_state IN ('Meeting Scheduled', 'Solution Picked')
+                   )
             )                                                               AS mql_active,
             COUNT(DISTINCT c.id) FILTER (
                 WHERE c.contact_flag = 'mql_qualified'
             )                                                               AS sql_ready,
-            (
-                SELECT COUNT(DISTINCT mca.contact_id)
-                FROM mql_call_attempts mca
-                JOIN mql_allocations ma ON ma.id = mca.allocation_id
-                JOIN agents am ON am.id = mca.agent_id
-                WHERE (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
-                  AND ma.close_reason IS DISTINCT FROM 'bd_history'
-                  AND am.team = 'mql'
-                AND mca.current_state IN ('Dream Snapshot Confirmed', 'Snapshot Confirmed')
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE mc.confirmed_snapshot_attempts > 0
             )                                                               AS true_mql,
 
             -- ── Pool health ───────────────────────────────────────────────
@@ -120,147 +139,54 @@ def _load_contact_stats(campaign: str) -> pd.DataFrame:
                 WHERE c.contact_flag = 'mql_rejected'
             )                                                               AS mql_rejected,
 
-                        -- ── Block accumulation (historical) ───────────────────────────
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE EXISTS (
-                                        SELECT 1 FROM call_actions ca
-                                        WHERE ca.contact_id = c.id
-                                            AND ca.call_status = 'Invalid Number'
-                                )
-                                     OR EXISTS (
-                                        SELECT 1
-                                        FROM mql_call_attempts mca
-                                        JOIN mql_allocations ma ON ma.id = mca.allocation_id
-                                        JOIN agents am ON am.id = mca.agent_id
-                                        WHERE mca.contact_id = c.id
-                                            AND (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
-                                            AND ma.close_reason IS DISTINCT FROM 'bd_history'
-                                            AND am.team = 'mql'
-                                            AND mca.call_status = 'Invalid Number'
-                                )
-                        )                                                               AS blk_invalid,
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE EXISTS (
-                                        SELECT 1 FROM call_actions ca
-                                        WHERE ca.contact_id = c.id
-                                            AND ca.call_status = 'Do not Disturb'
-                                )
-                                     OR EXISTS (
-                                        SELECT 1
-                                        FROM mql_call_attempts mca
-                                        JOIN mql_allocations ma ON ma.id = mca.allocation_id
-                                        JOIN agents am ON am.id = mca.agent_id
-                                        WHERE mca.contact_id = c.id
-                                            AND (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
-                                            AND ma.close_reason IS DISTINCT FROM 'bd_history'
-                                            AND am.team = 'mql'
-                                            AND mca.call_status = 'Do not Disturb'
-                                )
-                        )                                                               AS blk_dnd,
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE c.contact_flag = 'not_interested'
-                                     OR EXISTS (
-                                        SELECT 1 FROM call_actions ca
-                                        WHERE ca.contact_id = c.id
-                                            AND ca.current_state IN ('Not interested', 'Not Interested')
-                                )
-                                     OR EXISTS (
-                                        SELECT 1
-                                        FROM mql_call_attempts mca
-                                        JOIN mql_allocations ma ON ma.id = mca.allocation_id
-                                        JOIN agents am ON am.id = mca.agent_id
-                                        WHERE mca.contact_id = c.id
-                                            AND (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
-                                            AND ma.close_reason IS DISTINCT FROM 'bd_history'
-                                            AND am.team = 'mql'
-                                            AND mca.current_state = 'Not interested'
-                                )
-                        )                                                               AS blk_not_int,
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE c.contact_flag = 'referred'
-                                     OR EXISTS (
-                                        SELECT 1 FROM call_actions ca
-                                        WHERE ca.contact_id = c.id
-                                            AND (
-                                                    ca.call_status = 'Referred'
-                                                    OR ca.current_state IN ('Referred', 'Reffered')
-                                            )
-                                )
-                                     OR EXISTS (
-                                        SELECT 1
-                                        FROM mql_call_attempts mca
-                                        JOIN mql_allocations ma ON ma.id = mca.allocation_id
-                                        JOIN agents am ON am.id = mca.agent_id
-                                        WHERE mca.contact_id = c.id
-                                            AND (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
-                                            AND ma.close_reason IS DISTINCT FROM 'bd_history'
-                                            AND am.team = 'mql'
-                                            AND mca.current_state IN ('Referred', 'Reffered')
-                                )
-                        )                                                               AS blk_referred,
-                        COUNT(DISTINCT c.id) FILTER (WHERE c.contact_flag = 'language_issue')   AS blk_language,
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE EXISTS (
-                                        SELECT 1
-                                        FROM call_actions ca
-                                        WHERE ca.contact_id = c.id
-                                            AND ca.current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months')
-                                )
-                        )                                                               AS blk_bd_3months_all,
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE EXISTS (
-                                        SELECT 1
-                                        FROM call_actions ca
-                                        WHERE ca.contact_id = c.id
-                                            AND ca.current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months')
-                                            AND ca.called_at <= NOW() - INTERVAL '90 days'
-                                )
-                        )                                                               AS blk_bd_3months_ready,
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE EXISTS (
-                                        SELECT 1
-                                        FROM mql_call_attempts mca
-                                        JOIN mql_allocations ma ON ma.id = mca.allocation_id
-                                        JOIN agents am ON am.id = mca.agent_id
-                                        WHERE mca.contact_id = c.id
-                                            AND (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
-                                            AND ma.close_reason IS DISTINCT FROM 'bd_history'
-                                            AND am.team = 'mql'
-                                            AND mca.current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months')
-                                )
-                        )                                                               AS blk_mql_3months_all,
-                        COUNT(DISTINCT c.id) FILTER (
-                                WHERE EXISTS (
-                                        SELECT 1
-                                        FROM mql_call_attempts mca
-                                        JOIN mql_allocations ma ON ma.id = mca.allocation_id
-                                        JOIN agents am ON am.id = mca.agent_id
-                                        WHERE mca.contact_id = c.id
-                                            AND (ma.campaign = %(campaign)s OR ma.campaign ILIKE %(campaign_like)s)
-                                            AND ma.close_reason IS DISTINCT FROM 'bd_history'
-                                            AND am.team = 'mql'
-                                            AND mca.current_state IN ('Attempt Again after 3 months', 'Allocate Again 3 months')
-                                            AND mca.called_at <= NOW() - INTERVAL '90 days'
-                                )
-                        )                                                               AS blk_mql_3months_ready,
+            -- ── Block accumulation (historical) ───────────────────────────
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE bc.invalid_attempts > 0 OR mc.invalid_attempts > 0
+            )                                                               AS blk_invalid,
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE bc.dnd_attempts > 0 OR mc.dnd_attempts > 0
+            )                                                               AS blk_dnd,
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE c.contact_flag = 'not_interested'
+                   OR bc.not_int_attempts > 0
+                   OR mc.not_int_attempts > 0
+            )                                                               AS blk_not_int,
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE c.contact_flag = 'referred'
+                   OR bc.referred_attempts > 0
+                   OR mc.referred_attempts > 0
+            )                                                               AS blk_referred,
+            COUNT(DISTINCT c.id) FILTER (WHERE c.contact_flag = 'language_issue')   AS blk_language,
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE bc.realloc_3m_attempts > 0
+            )                                                               AS blk_bd_3months_all,
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE bc.realloc_3m_ready_attempts > 0
+            )                                                               AS blk_bd_3months_ready,
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE mc.realloc_3m_attempts > 0
+            )                                                               AS blk_mql_3months_all,
+            COUNT(DISTINCT c.id) FILTER (
+                WHERE mc.realloc_3m_ready_attempts > 0
+            )                                                               AS blk_mql_3months_ready,
 
             -- ── Velocity: avg days from first BD call → first Shared Story ─
             ROUND(AVG(
                 CASE
-                    WHEN bd_first.first_called_at IS NOT NULL
-                     AND bd_story.first_story_at IS NOT NULL
-                     AND bd_story.first_story_at >= bd_first.first_called_at
-                    THEN EXTRACT(EPOCH FROM (bd_story.first_story_at - bd_first.first_called_at)) / 86400
+                    WHEN bc.first_called_at IS NOT NULL
+                     AND bc.first_story_at IS NOT NULL
+                     AND bc.first_story_at >= bc.first_called_at
+                    THEN EXTRACT(EPOCH FROM (bc.first_story_at - bc.first_called_at)) / 86400
                 END
             ), 1)                                                           AS avg_days_to_story,
 
             -- ── End-to-end cycle: first BD call → first final MQL close ───
             ROUND(AVG(
                 CASE
-                    WHEN bd_first.first_called_at IS NOT NULL
+                    WHEN bc.first_called_at IS NOT NULL
                      AND mql_close.first_mql_closed_at IS NOT NULL
-                     AND mql_close.first_mql_closed_at >= bd_first.first_called_at
-                    THEN EXTRACT(EPOCH FROM (mql_close.first_mql_closed_at - bd_first.first_called_at)) / 86400
+                     AND mql_close.first_mql_closed_at >= bc.first_called_at
+                    THEN EXTRACT(EPOCH FROM (mql_close.first_mql_closed_at - bc.first_called_at)) / 86400
                 END
             ), 1)                                                           AS avg_days_total_e2e,
 
@@ -274,17 +200,8 @@ def _load_contact_stats(campaign: str) -> pd.DataFrame:
                   AND c2.contact_flag = 'fresh'
             )                                                               AS avg_daily_fresh
         FROM contacts c
-        LEFT JOIN LATERAL (
-            SELECT MIN(ca.called_at) AS first_called_at
-            FROM call_actions ca
-            WHERE ca.contact_id = c.id
-        ) bd_first ON TRUE
-        LEFT JOIN LATERAL (
-            SELECT MIN(ca.called_at) AS first_story_at
-            FROM call_actions ca
-            WHERE ca.contact_id = c.id
-              AND ca.current_state = 'Shared Story'
-        ) bd_story ON TRUE
+        LEFT JOIN bd_counts bc ON bc.contact_id = c.id
+        LEFT JOIN mql_counts mc ON mc.contact_id = c.id
         LEFT JOIN LATERAL (
             SELECT MIN(ma.closed_at) AS first_mql_closed_at
             FROM mql_allocations ma
@@ -1198,7 +1115,7 @@ if cs is not None:
                     "Bucket": label,
                     "Type": "Permanent",
                     "Contacts": value,
-                    "Ready for allocation now": "No",
+                    "Ready?": "No",
                     "% of blocked": round(value * 100 / total_blocked, 1) if total_blocked else 0,
                 }
             )
@@ -1207,12 +1124,13 @@ if cs is not None:
             value = payload["contacts"]
             if value <= 0:
                 continue
+            ready_str = "Yes" if payload["ready"] > 0 else "No"
             block_rows.append(
                 {
                     "Bucket": label,
                     "Type": "Temporary (90-day hold)",
                     "Contacts": value,
-                    "Ready for allocation now": payload["ready"],
+                    "Ready?": ready_str,
                     "% of blocked": round(value * 100 / total_blocked, 1) if total_blocked else 0,
                 }
             )
@@ -1221,3 +1139,6 @@ if cs is not None:
         st.dataframe(blocks_df, use_container_width=True, hide_index=True)
     else:
         st.info("No blocked contacts yet.")
+
+
+st.caption(f'Page last updated: {date.today().isoformat()} 22:15')

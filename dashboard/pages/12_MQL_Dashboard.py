@@ -255,27 +255,17 @@ def _compute_agent_summary(df: pd.DataFrame) -> pd.DataFrame:
         escalate=("_escalate", "sum"),
     ).reset_index()
 
-    true_mql_contacts = (
-        d[d["current_state"].isin(["Dream Snapshot Confirmed", "Snapshot Confirmed"])][["agent_name", "contact_id"]]
-        .dropna(subset=["contact_id"])
-        .drop_duplicates()
-        .groupby("agent_name")
-        .size()
-        .rename("true_mql")
-        .reset_index()
-    )
-    agg = agg.merge(true_mql_contacts, on="agent_name", how="left")
-    agg["true_mql"] = agg["true_mql"].fillna(0).astype(int)
+    # SQL count per agent (from closure logic in query)
+    # The 'qualified' column in the per-agent table comes from the 'alloc' CTE in _load_mql_stats,
+    # which we don't change because it uses ma.close_reason = 'qualified' (which maps to SQL).
 
-    agg["connection_rate_pct"] = (
-        agg["connected"] * 100.0 / agg["total_calls"].clip(lower=1)
-    ).round(1)
     return agg.sort_values("total_calls", ascending=False).reset_index(drop=True)
 
 
 def _closure_summary(close_df: pd.DataFrame) -> tuple[int, int, int, float]:
     if close_df.empty:
         return 0, 0, 0, 0.0
+    # SQL count (Solution Picked)
     qualified = int((close_df["close_reason"] == "qualified").sum())
     rejected = int((close_df["close_reason"] == "rejected").sum())
     stalled = int((close_df["close_reason"] == "stalled").sum())
@@ -285,6 +275,10 @@ def _closure_summary(close_df: pd.DataFrame) -> tuple[int, int, int, float]:
 
 
 def _true_mql_unique_contacts(df: pd.DataFrame) -> int:
+    """
+    In the context of the MQL Activity Dashboard (per-period), 
+    we count unique contacts who reached Snapshot Confirmed in this period.
+    """
     if df.empty or "contact_id" not in df.columns:
         return 0
     return int(

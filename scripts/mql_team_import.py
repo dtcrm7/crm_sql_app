@@ -41,11 +41,10 @@ import psycopg2
 from dotenv import load_dotenv
 
 # Reuse existing sheet writer so FU blocks are written exactly like prod.
-import mql_pro_sheet_backfill as mql_sheet_backfill
-
-load_dotenv()
+# import mql_pro_sheet_backfill as mql_sheet_backfill
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
 RAW_DIR = PROJECT_ROOT / "data" / "MQL_team"
 NORMALIZED_CSV = PROJECT_ROOT / "data" / "mql_pro_from_team.csv"
 REJECTED_CSV = PROJECT_ROOT / "data" / "mql_pro_from_team_rejected.csv"
@@ -961,6 +960,44 @@ def maybe_update_contact_flag(
     return True
 
 
+def ensure_contact_flag_constraint(conn) -> None:
+    allowed = [
+        "fresh", "in_progress", "needs_followup", "shared_story",
+        "snapshot_sent", "not_interested", "dnd", "attempt_3_months",
+        "invalid_number", "referred", "language_issue",
+        "mql_in_progress", "meeting_in_progress", "mql_qualified",
+        "mql_rejected", "bd_qualified"
+    ]
+    allowed_sql = ", ".join(f"'{v}'" for v in allowed)
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            DO $$
+            DECLARE
+                r record;
+            BEGIN
+                FOR r IN
+                    SELECT conname
+                    FROM pg_constraint
+                    WHERE conrelid = 'contacts'::regclass
+                      AND contype = 'c'
+                      AND pg_get_constraintdef(oid) ILIKE '%contact_flag%'
+                LOOP
+                    EXECUTE format('ALTER TABLE contacts DROP CONSTRAINT IF EXISTS %I', r.conname);
+                END LOOP;
+            END $$;
+            """
+        )
+        cur.execute(
+            f"""
+            ALTER TABLE contacts
+            ADD CONSTRAINT contacts_contact_flag_check
+            CHECK (contact_flag IN ({allowed_sql}))
+            """
+        )
+
+
 def apply_db_import(rows: list[dict[str, Any]], dry_run: bool, campaign_default: str) -> dict[str, int]:
     stats = {
         "rows_total": len(rows),
@@ -979,6 +1016,7 @@ def apply_db_import(rows: list[dict[str, Any]], dry_run: bool, campaign_default:
     try:
         with conn.cursor() as cur:
             ensure_close_reason_constraint(conn)
+            ensure_contact_flag_constraint(conn)
 
             agent_map = resolve_agents(conn, {r["Assigned"] for r in rows})
             contact_cache: dict[str, int | None] = {}
@@ -1093,6 +1131,8 @@ def apply_db_import(rows: list[dict[str, Any]], dry_run: bool, campaign_default:
                     close_reason = "qualified"
                     outcome = "sql"
                     target_flag = "mql_qualified"
+                elif current_state in {"Snapshot Confirmed", "Dream Snapshot Confirmed"}:
+                    target_flag = "bd_qualified"
                 elif current_state == "Allocate Again 3 months":
                     close_reason = "reallocated"
                     outcome = "pending"
@@ -1100,8 +1140,6 @@ def apply_db_import(rows: list[dict[str, Any]], dry_run: bool, campaign_default:
                     target_flag = "attempt_3_months"
                 elif current_state == "Meeting Scheduled":
                     target_flag = "meeting_in_progress"
-                elif current_state == "Dream Snapshot Confirmed":
-                    target_flag = "mql_in_progress"
 
                 if maybe_update_contact_flag(cur, contact_id, target_flag, called_at, flag_cache):
                     stats["flags_updated"] += 1
@@ -1262,11 +1300,11 @@ def main() -> None:
     for key, value in db_stats.items():
         logging.info(f"{key}: {value}")
 
-    processed, written = run_sheet_backfill(NORMALIZED_CSV, dry_run=args.dry_run)
-    logging.info("\nSheet backfill summary")
-    logging.info("-" * 64)
-    logging.info(f"Rows processed: {processed}")
-    logging.info(f"Rows written:   {written}")
+    # processed, written = run_sheet_backfill(NORMALIZED_CSV, dry_run=args.dry_run)
+    # logging.info("\nSheet backfill summary")
+    # logging.info("-" * 64)
+    # logging.info(f"Rows processed: {processed}")
+    # logging.info(f"Rows written:   {written}")
 
     run_rewrite = args.rewrite_bd_remark_all or args.rewrite_last_remark_all
     if run_rewrite:
