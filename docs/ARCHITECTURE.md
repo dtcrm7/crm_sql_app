@@ -1,7 +1,7 @@
 # B2B CRM — System Architecture
 > Phase: 2C — BD + MQL + Meetings pipeline live
 > DB: PostgreSQL (`crm_db`) | Dashboard: Streamlit | Sync: Python scripts via Google Sheets API
-> Last updated: March 2026
+> Last updated: April 2026
 
 ---
 
@@ -181,6 +181,14 @@ Also updates `contacts_allocation_ready` view to exclude all MQL-locked flags fr
 | `reallocation_campaigns` | `07_reallocation_campaigns.sql` | Saved BD re-allocation filter sets. |
 | `reallocation_campaign_contacts` | `07_reallocation_campaigns.sql` | Contact snapshot per re-allocation. |
 
+### Schema patch files (run after the numbered sequence if column is missing)
+
+| File | What it adds |
+|---|---|
+| `sql/10_add_bd_category.sql` | `contacts.bd_category VARCHAR(100)` + index. Stores original CSV Category for segmentation. |
+| `sql/add_escalated_close_reason.sql` | Patches `mql_allocations.close_reason` CHECK constraint to include `'escalated'`. Safe to re-run. |
+| `sql/agent_sheets_schema.sql` | Standalone creation of `agent_sheets` table (run after `02`, before `08` if skipped by `04`). |
+
 ---
 
 ## 5. Google Sheets Structure
@@ -284,16 +292,16 @@ Used for analysis / reporting on the full call timeline.
 
 | Script | When | What it does |
 |---|---|---|
-| `scripts/etl.py` | On-demand | Ingests new contacts from CSV → companies + contacts + phones + emails. Sets `contact_flag='fresh'`, `campaign='consulting'`. |
+| `scripts/bd_story_import.py` | One-time | Imports historical BD story data from `data/mql_t_d.csv`. Dry-run by default (`--apply` to commit). Auto-creates missing agents, handles reallocation when owner changes. Idempotent. |
 | `scripts/call_actions_sync.py` | ~1:00 AM | Reads BD agent sheets → inserts `call_actions` → updates `contact_flag` + `company_flag` → marks phones invalid → closes allocations. |
 | `scripts/allocation_engine.py` | ~2:00 AM | Flags stalled contacts → resets leave → writes New Contact + FU1–FU5 to agent sheets → auto-creates Instructions tab. |
-| `scripts/migrate_old_data.py` | One-time | Migrates historical BD calls from `pro_D2.csv`. |
 
 ### MQL scripts
 
 | Script | When | What it does |
 |---|---|---|
-| `scripts/mql_migration.py` | One-time | Migrates historical MQL CSV into `mql_allocations` + `mql_call_attempts`. |
+| `scripts/mql_team_import.py` | One-time | Full MQL historical import pipeline. Parses wide MQL team CSV files → normalizes to one row per FU → imports to DB → backfills MQL Google Sheets. See `docs/MQL_IMPORT_DETAILED.md`. |
+| `scripts/mql_pro_sheet_backfill.py` | On-demand | Writes normalized FU history back to MQL agent sheets. Used internally by `mql_team_import.py`; can be re-run per agent with `--agent-id`. |
 | `scripts/mql_sync.py` | ~1:00 AM | Reads MQL agent sheets → inserts `mql_call_attempts` → updates `contact_flag` → on "Meeting Scheduled": creates `meetings` DB row + appends to Meetings tab + upserts Meeting Context and Meeting Context Normalized tabs. |
 | `scripts/meeting_sync.py` | ~1:30 AM | Reads Meetings tab → updates `meetings` table → auto-fills FU(n+1) in agent's MQL sheet with "Meeting Held" + conclusion. |
 | `scripts/mql_allocation_engine.py` | ~2:30 AM | Queries `shared_story`/`snapshot_sent` contacts → inserts `mql_allocations` + `mql_analysis` → writes contact info to MQL sheets → moves FU15+ contacts to FU16-30 tab → auto-creates Instructions tab. Supports `--contact-ids` for manual/exact allocation. |
@@ -302,10 +310,12 @@ Used for analysis / reporting on the full call timeline.
 
 | Script | Purpose |
 |---|---|
-| `scripts/backup_db.py` | Manual or scheduled DB backup to `backups/` folder. |
+| `scripts/backup_db.py` | Full `pg_dump` backup to `backups/` folder. Keeps the N most recent. |
+| `scripts/backup_db_incremental.py` | Weekly incremental backup — appends only new/changed rows to per-table CSV files with watermarks. Works with local and managed PostgreSQL. Scheduled via `setup_backup_incremental.bat`. |
+| `scripts/marketing_sheet_export.py` | Exports MQL contacts to a Google Sheet for marketing/newsletter campaigns. Three tabs: All MQLs, Interested MQLs, Rejected MQLs. |
+| `scripts/sheet_values_config.py` | Centralized dropdown values and normalization maps for all sheet columns. Update here once to keep sheet UI and sync parsing aligned. |
 | `scripts/create_admin_user.py` | Create / reset / deactivate dashboard users. |
 | `scripts/ai_query_shell.py` | CLI natural-language SQL (Gemini / Claude). |
-| `scripts/prepare_csv.py` | Pre-process raw CSV files before ETL ingestion. |
 
 ---
 
@@ -355,7 +365,23 @@ Used for analysis / reporting on the full call timeline.
 
 ---
 
-## 8. Escalation Flow
+## 8. Dashboard Utilities (`dashboard/utils/`)
+
+Shared helper modules imported by all dashboard pages.
+
+| Module | What it provides |
+|---|---|
+| `db.py` | PostgreSQL connection pool for Streamlit. `get_conn()`, `query_df()`, `execute()`, `execute_many()`. All queries logged with full traceback on error. |
+| `auth.py` | Cookie-based session auth. `is_logged_in()`, `get_user()`, `get_role()`, `is_admin()`, `log_action()`. Wraps `streamlit-authenticator`. |
+| `engine.py` | Wrappers to trigger BD allocation and sync scripts from the dashboard. `run_allocation()`, `run_sync()`, `_run_command()`. |
+| `mql_engine.py` | Wrappers to trigger MQL allocation and sync scripts from the dashboard. `run_mql_allocation()`, `run_mql_sync()`. |
+| `sheets.py` | Google Sheets utilities. `get_gspread_client()`, `delete_contact_from_sheet()`. Resolves `credentials.json` via env var or project root. |
+| `errors.py` | Shared error handling. `log_and_show()` logs full traceback to console and renders `st.error` with collapsible details in UI. `log_and_warn()` for non-fatal warnings. |
+| `campaign.py` | Campaign selector widget. `get_campaign()` renders a sidebar selector and returns the active campaign string used by all pages. |
+
+---
+
+## 9. Escalation Flow
 
 When an MQL agent logs `Current State = Escalate`:
 
@@ -370,7 +396,7 @@ When an MQL agent logs `Current State = Escalate`:
 
 ---
 
-## 9. Daily Run Order
+## 10. Daily Run Order
 
 ```
 01:00 AM  call_actions_sync.py       BD: sheet outcomes → DB
@@ -392,42 +418,33 @@ python scripts/mql_allocation_engine.py --all-agents --campaign consulting
 
 ---
 
-## 10. Shared Story Historical Data — One-Time Import Flow
+## 11. Historical Data — One-Time Import Flow
 
-When setting up a fresh DB with existing MQL call history:
+See `docs/HISTORICAL_IMPORT_FLOW.md` for the full operational sequence. Summary:
 
 ```
-Step 1 — Prepare CSV
-    Export MQL agent sheet history to a flat CSV.
-    Required columns:
-      Unique ID · Lead Category · Call Status · Current State · Call Duration ·
-      Remark · Recording Link · Transcript · Date · Call Type · Assigned ·
-      Category · (blank) · Phone No · Company Name · Person Name · Email · Dream Snapshot
+Step 1 — Reset DB data (if rebuilding from scratch)
+    psql -f sql/reset_data.sql
 
-Step 2 — Always dry-run first
-    python scripts/mql_migration.py --file data/story_mql.csv --dry-run
-    Check: contact counts, agent name matches, phone handling logs.
+Step 2 — Import BD story history
+    python scripts/bd_story_import.py --file data/mql_t_d.csv   # dry-run
+    python scripts/bd_story_import.py --file data/mql_t_d.csv --apply
 
-Step 3 — Run for real
-    python scripts/mql_migration.py --file data/story_mql.csv
-    Creates:
-      • contacts (source_id = 'CC-xxxx' / 'BD-xxxx')
-      • mql_allocations (closed, close_reason = 'bd_history')
-      • mql_call_attempts (one row per CSV row)
+Step 3 — Add campaign support
+    psql -f sql/03_add_campaign.sql
 
-Step 4 — Run 03_add_campaign.sql in pgAdmin
-    Seeds 'consulting' campaign on all contacts.
+Step 4 — Import MQL team history
+    python scripts/mql_team_import.py --audit-only
+    python scripts/mql_team_import.py --dry-run
+    python scripts/mql_team_import.py --apply --rewrite-bd-remark-all
 
 Step 5 — Run MQL allocation engine
     python scripts/mql_allocation_engine.py --all-agents --campaign consulting
-    Allocates shared_story/snapshot_sent contacts to MQL agents.
 ```
-
-**Critical:** Never use `etl.py` with MQL/story CSV. It creates contacts with `source_id=NULL`, producing duplicates alongside `mql_migration.py`'s `source_id='CC-xxxx'` rows.
 
 ---
 
-## 11. Key Business Rules
+## 12. Key Business Rules
 
 | Rule | Detail |
 |---|---|
@@ -442,11 +459,11 @@ Step 5 — Run MQL allocation engine
 | Sync trigger | A row only syncs if the Timestamp column is filled. |
 | Idempotent syncs | Re-running any sync skips rows already marked `✓ Synced`. |
 | Phone uncertainty | Contacts with multiple phones get `phone_uncertain=TRUE`. MQL agent must confirm correct number and update col D. `mql_sync.py` then locks it as primary and marks others invalid. |
-| bd_history allocations | Allocations created by `mql_migration.py` have `close_reason='bd_history'`. Excluded from all live metrics and KPI counts. |
+| bd_history allocations | Allocations imported via `mql_team_import.py` have `close_reason='bd_history'`. Excluded from all live metrics and KPI counts. |
 
 ---
 
-## 12. Environment Variables (`.env`)
+## 13. Environment Variables (`.env`)
 
 ```
 DB_HOST=localhost
@@ -467,7 +484,7 @@ ANTHROPIC_API_KEY=<your_anthropic_key>
 
 ---
 
-## 13. Known Column Renames (March 2026)
+## 14. Known Column Renames (March 2026)
 
 | Old Header | New Header | Location |
 |---|---|---|
@@ -478,7 +495,7 @@ Rows in agent sheets with old headers are skipped by sync until re-filled.
 
 ---
 
-## 14. Troubleshooting
+## 15. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|

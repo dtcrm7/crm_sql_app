@@ -1,10 +1,10 @@
-﻿# B2B CRM â€” Setup & Deployment Guide
+# B2B CRM — Setup & Deployment Guide
 > Covers: fresh local install, database creation, historical data import, and cloud deployment.
-> Last updated: March 2026
+> Last updated: April 2026
 
 ---
 
-## Part A â€” Local Setup (Windows, PostgreSQL + Streamlit)
+## Part A — Local Setup (Windows, PostgreSQL + Streamlit)
 
 Use this when setting up on a new development PC or a local Windows machine.
 
@@ -14,22 +14,22 @@ Use this when setting up on a new development PC or a local Windows machine.
 
 Install these before anything else:
 
-1. **Python 3.11+** â€” [python.org](https://python.org)
-2. **PostgreSQL 15+** â€” [postgresql.org](https://postgresql.org/download/windows)
-   - During install: set the `postgres` user password â€” you will need it.
+1. **Python 3.11+** — [python.org](https://python.org)
+2. **PostgreSQL 15+** — [postgresql.org](https://postgresql.org/download/windows)
+   - During install: set the `postgres` user password — you will need it.
    - Keep the default port: `5432`.
-3. **pgAdmin 4** â€” installed with PostgreSQL, or separately at [pgadmin.org](https://pgadmin.org)
-4. **Git** (optional, for cloning) â€” [git-scm.com](https://git-scm.com)
+3. **pgAdmin 4** — installed with PostgreSQL, or separately at [pgadmin.org](https://pgadmin.org)
+4. **Git** (optional, for cloning) — [git-scm.com](https://git-scm.com)
 
 ---
 
 ### A2. Get the Project
 
-Copy the project folder to your machine (e.g. `D:\Projects\SQL Migration`).
+Copy the project folder to your machine (e.g. `D:\Projects\crm_sql_app`).
 
 If using Git:
 ```bash
-git clone <repo-url> "D:\Projects\SQL Migration"
+git clone <repo-url> "D:\Projects\crm_sql_app"
 ```
 
 ---
@@ -37,7 +37,7 @@ git clone <repo-url> "D:\Projects\SQL Migration"
 ### A3. Create the Python Virtual Environment
 
 ```bash
-cd "D:\Projects\SQL Migration"
+cd "D:\Projects\crm_sql_app"
 python -m venv crm_etl
 crm_etl\Scripts\activate
 pip install -r requirements.txt
@@ -45,7 +45,7 @@ pip install -r requirements.txt
 
 For the dashboard only (lighter install):
 ```bash
-pip install -r requirements_dashboard.txt
+pip install -r dashboard/requirements_dashboard.txt
 ```
 
 ---
@@ -74,13 +74,13 @@ GEMINI_API_KEY=<your_gemini_api_key>
 ANTHROPIC_API_KEY=<your_anthropic_api_key>
 ```
 
-Place the Google service account `credentials.json` file in the project root (`D:\Projects\SQL Migration\credentials.json`).
+Place the Google service account `credentials.json` file in the project root.
 
 ---
 
 ### A5. Create the Database
 
-Open pgAdmin â†’ connect to your local PostgreSQL server â†’ open the Query Tool and run:
+Open pgAdmin → connect to your local PostgreSQL server → open the Query Tool and run:
 
 ```sql
 CREATE DATABASE crm_db;
@@ -90,9 +90,9 @@ Then switch the connection to `crm_db` before running the schema files below.
 
 ---
 
-### A6. Run SQL Schema Files â€” In Exact Order
+### A6. Run SQL Schema Files — In Exact Order
 
-Open each file in pgAdmin (File â†’ Open â†’ navigate to `sql/`) and run with F5. Do not skip steps or swap order.
+Open each file in pgAdmin (File → Open → navigate to `sql/`) and run with F5. Do not skip steps or swap order.
 
 | Step | File | What it creates |
 |---|---|---|
@@ -104,9 +104,17 @@ Open each file in pgAdmin (File â†’ Open â†’ navigate to `sql/`) and r
 | 6 | `sql/06_rbac_auth.sql` | `dashboard_users`, `action_log` (dashboard login) |
 | 7 | `sql/07_reallocation_campaigns.sql` | `reallocation_campaigns`, `reallocation_campaign_contacts` |
 | 8 | `sql/08_meetings_schema.sql` | `meetings`, `meeting_call_attempts` + extends `agent_sheets` with `sheet_type` |
-| 9 | `sql/09_reporting_views.sql` | All 9 reporting views + performance indexes |
+| 9 | `sql/09_reporting_views.sql` | All reporting views + performance indexes |
+| 10 | `sql/10_add_bd_category.sql` | `contacts.bd_category` column + index |
 
-All files use `IF NOT EXISTS` â€” safe to re-run without breaking anything.
+All files use `IF NOT EXISTS` — safe to re-run without breaking anything.
+
+**Patch files** (run if the column is missing on an existing install):
+
+| File | When needed |
+|---|---|
+| `sql/add_escalated_close_reason.sql` | If `mql_allocations.close_reason` CHECK doesn't include `'escalated'` |
+| `sql/agent_sheets_schema.sql` | If `agent_sheets` table is missing and step 4 didn't create it |
 
 ---
 
@@ -123,7 +131,7 @@ UPDATE agents SET team = 'mql' WHERE name IN ('Agent Name 1', 'Agent Name 2');
 ```
 
 **Set Google Sheet IDs for agents:**
-Go to Dashboard â†’ Agents â†’ select each agent â†’ paste their Google Sheet ID.
+Go to Dashboard → Agents → select each agent → paste their Google Sheet ID.
 Get the Sheet ID from the sheet URL: `https://docs.google.com/spreadsheets/d/SHEET_ID/edit`
 
 ---
@@ -132,12 +140,7 @@ Get the Sheet ID from the sheet URL: `https://docs.google.com/spreadsheets/d/SHE
 
 Via dashboard:
 ```
-Dashboard â†’ Upload â†’ select your CSV â†’ Upload
-```
-
-Or via command line:
-```bash
-python scripts/etl.py --file data/contacts.csv --campaign consulting
+Dashboard → Upload → select your CSV → Upload
 ```
 
 Required CSV columns: `source`, `source_id`, `first_name`, `company_name`, `phone1`
@@ -145,21 +148,23 @@ Optional: `last_name`, `designation`, `email1`, `phone2`, `phone3`, `website`, `
 
 ---
 
-### A9. Import Historical MQL Data (One-Time)
+### A9. Import Historical Data (One-Time)
 
-If you have existing MQL call history from old agent sheets, import it before running the allocation engine:
+If you have existing BD story and MQL call history, import it before running the allocation engine. See `docs/HISTORICAL_IMPORT_FLOW.md` for the full sequence.
 
+Quick reference:
 ```bash
-# Always dry-run first to check for issues
-python scripts/mql_migration.py --file data/story_mql.csv --dry-run
+# BD story history
+python scripts/bd_story_import.py --file data/mql_t_d.csv          # dry-run
+python scripts/bd_story_import.py --file data/mql_t_d.csv --apply
 
-# If output looks correct, run for real
-python scripts/mql_migration.py --file data/story_mql.csv
+# Then run: sql/03_add_campaign.sql in pgAdmin
+
+# MQL team history
+python scripts/mql_team_import.py --audit-only
+python scripts/mql_team_import.py --dry-run
+python scripts/mql_team_import.py --apply --rewrite-bd-remark-all
 ```
-
-Then in pgAdmin, run `sql/03_add_campaign.sql` to seed the campaign value on all imported contacts.
-
-**Important:** Never use `etl.py` for MQL/story data. It will create duplicate contacts.
 
 ---
 
@@ -177,48 +182,56 @@ Log in with the admin credentials created in A7.
 
 ### A11. Set Up Automatic Backup (Optional)
 
-Manual backup:
+**Full backup** (pg_dump, timestamped):
 ```bash
 python scripts/backup_db.py
 ```
 
-Scheduled backup every 5 days at 3 AM â€” run once as Administrator:
+Scheduled full backup every 5 days at 3 AM — run once as Administrator:
 ```
 scripts\setup_backup.bat
 ```
 
-Verify it registered:
+**Incremental backup** (appends only new/changed rows to CSV files with watermarks):
+```bash
+python scripts/backup_db_incremental.py
+python scripts/backup_db_incremental.py --output D:/Backups/incremental
+python scripts/backup_db_incremental.py --dry-run
+python scripts/backup_db_incremental.py --tables contacts mql_allocations
+```
+
+Verify scheduled task registered:
 ```bash
 schtasks /query /tn "CRM_DB_Backup" /fo LIST
 ```
 
 ---
 
-## Part B â€” Cloud / Online PostgreSQL Deployment
+## Part B — Cloud / Online PostgreSQL Deployment
 
-Use this when moving to a hosted server â€” either a cloud VM (e.g. a free-tier DigitalOcean or AWS EC2 instance running PostgreSQL + Streamlit), or a managed PostgreSQL service (e.g. Supabase, Neon, Railway, Render) with the Python scripts running separately.
+Use this when moving to a hosted server — either a cloud VM (e.g. a free-tier DigitalOcean or AWS EC2 instance running PostgreSQL + Streamlit), or a managed PostgreSQL service (e.g. Supabase, Neon, Railway, Render) with the Python scripts running separately.
 
 ---
 
 ### B1. Choose Your Hosting Approach
 
-**Option 1 â€” Full cloud VM (PostgreSQL + Streamlit on same machine)**
+**Option 1 — Full cloud VM (PostgreSQL + Streamlit on same machine)**
 Best for: full control, no service limits, cron jobs for nightly scripts.
 Free options: Oracle Cloud Always Free (2 ARM instances), Google Cloud e2-micro (always free in some regions).
 
-**Option 2 â€” Managed PostgreSQL + local or separate script runner**
+**Option 2 — Managed PostgreSQL + local or separate script runner**
 Best for: zero DB maintenance, easy scaling.
 Free options: Supabase (500 MB free), Neon (3 GB free), Railway ($5/month credit free tier).
 Scripts still run on your local machine or a separate lightweight VM.
 
 ---
 
-### B2. Option 1 â€” Cloud VM Full Stack
+### B2. Option 1 — Cloud VM Full Stack
 
 #### B2.1 Provision the VM
 
 - Create a VM with at least 1 GB RAM, 10 GB disk, Ubuntu 22.04.
-- Open firewall ports: `22` (SSH), `5432` (PostgreSQL â€” restrict to your IP), `8501` (Streamlit).
+- Open firewall ports: `22` (SSH), `5432` (PostgreSQL — restrict to your IP), `8501` (Streamlit).
 
 #### B2.2 Install dependencies on the VM
 
@@ -287,9 +300,9 @@ Upload `credentials.json` via SCP:
 scp credentials.json ubuntu@YOUR_VM_IP:/home/ubuntu/crm/credentials.json
 ```
 
-#### B2.5 Run the SQL schema (steps 1â€“9 from A6)
+#### B2.5 Run the SQL schema (steps 1–10 from A6)
 
-Connect pgAdmin to the remote server (use the VM's public IP, port 5432) and run the 9 SQL files in order.
+Connect pgAdmin to the remote server (use the VM's public IP, port 5432) and run the 10 SQL files in order.
 
 #### B2.6 Run the Streamlit dashboard as a service
 
@@ -345,7 +358,7 @@ Add:
 
 ---
 
-### B3. Option 2 â€” Managed PostgreSQL + Local Scripts
+### B3. Option 2 — Managed PostgreSQL + Local Scripts
 
 Use this if you want a hosted database but run scripts from your local machine or a lightweight server.
 
@@ -355,14 +368,14 @@ Recommended free options:
 
 | Provider | Free Tier | Notes |
 |---|---|---|
-| **Supabase** | 500 MB, 2 projects | Has a full dashboard UI â€” easiest to start |
-| **Neon** | 3 GB, serverless | Scales to zero when idle â€” cheapest |
+| **Supabase** | 500 MB, 2 projects | Has a full dashboard UI — easiest to start |
+| **Neon** | 3 GB, serverless | Scales to zero when idle — cheapest |
 | **Railway** | $5 credit/month | Predictable, easy setup |
 | **Render** | 90 days free then $7/month | Good for full-stack later |
 
 Steps (Supabase example):
-1. Go to [supabase.com](https://supabase.com) â†’ New project â†’ set password â†’ choose region closest to your team.
-2. Go to Project Settings â†’ Database â†’ copy the **Connection String** (URI format).
+1. Go to [supabase.com](https://supabase.com) → New project → set password → choose region closest to your team.
+2. Go to Project Settings → Database → copy the **Connection String** (URI format).
 3. Note the host, port (usually `5432` or `6543` for pooler), database name, user, and password.
 
 #### B3.2 Update your `.env`
@@ -385,11 +398,11 @@ DB_PORT=6543
 
 Use your managed provider's SQL editor (Supabase has one built in) or connect pgAdmin to the remote host.
 
-Run the 9 schema files from A6 in the same order.
+Run the 10 schema files from A6 in the same order.
 
 #### B3.4 Run scripts locally
 
-Scripts connect to the remote DB via `.env` â€” no other changes needed:
+Scripts connect to the remote DB via `.env` — no other changes needed:
 ```bash
 python scripts/call_actions_sync.py --campaign consulting
 python scripts/mql_allocation_engine.py --all-agents --campaign consulting
@@ -397,16 +410,16 @@ python scripts/mql_allocation_engine.py --all-agents --campaign consulting
 
 For nightly scheduling on Windows (local machine), use Task Scheduler:
 ```
-scripts\setup_backup.bat  â† (adapt with cron-style commands for each script)
+scripts\setup_backup.bat  ← (adapt with cron-style commands for each script)
 ```
 Or set up a lightweight cron on a free Oracle Cloud VM and point it to your managed DB.
 
 #### B3.5 Deploy the Streamlit dashboard
 
-Option A â€” **Streamlit Community Cloud** (free, easiest):
-1. Push your project to a GitHub repo (keep `.env` out of git â€” use Streamlit's Secrets instead).
-2. Go to [share.streamlit.io](https://share.streamlit.io) â†’ New app â†’ connect repo â†’ set `dashboard/app.py` as entry point.
-3. Add all `.env` values under **Advanced settings â†’ Secrets** in TOML format:
+Option A — **Streamlit Community Cloud** (free, easiest):
+1. Push your project to a GitHub repo (keep `.env` out of git — use Streamlit's Secrets instead).
+2. Go to [share.streamlit.io](https://share.streamlit.io) → New app → connect repo → set `dashboard/app.py` as entry point.
+3. Add all `.env` values under **Advanced settings → Secrets** in TOML format:
    ```toml
    DB_HOST = "your_host"
    DB_PASSWORD = "your_password"
@@ -414,8 +427,8 @@ Option A â€” **Streamlit Community Cloud** (free, easiest):
    ```
 4. Deploy. Dashboard is live at `https://your-app.streamlit.app`.
 
-Option B â€” **Render** (free tier, more control):
-1. Create a Render Web Service â†’ connect GitHub repo.
+Option B — **Render** (free tier, more control):
+1. Create a Render Web Service → connect GitHub repo.
 2. Set Build Command: `pip install -r dashboard/requirements_dashboard.txt`
 3. Set Start Command: `streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0`
 4. Add environment variables in Render dashboard.
@@ -454,23 +467,23 @@ sudo systemctl reload nginx
 
 ### B5. Post-Deployment Checklist
 
-- [ ] All 9 SQL schema files run successfully
+- [ ] All 10 SQL schema files run successfully
 - [ ] `dashboard_users` table exists and admin user created
 - [ ] All MQL agents have `team='mql'` set in DB
-- [ ] All agent Google Sheet IDs set in Dashboard â†’ Agents
+- [ ] All agent Google Sheet IDs set in Dashboard → Agents
 - [ ] `MEETING_SHEET_ID` set in `.env` / secrets
 - [ ] `COOKIE_SECRET` set (required for login to work)
 - [ ] `credentials.json` on server and path correct in `.env`
-- [ ] Test `call_actions_sync.py --dry-run` â€” should connect and log agents
-- [ ] Test `mql_allocation_engine.py --agent-id X --count 1 --dry-run` â€” should find eligible contacts
+- [ ] Test `call_actions_sync.py --dry-run` — should connect and log agents
+- [ ] Test `mql_allocation_engine.py --agent-id X --count 1 --dry-run` — should find eligible contacts
 - [ ] Dashboard login works at your URL
 - [ ] Nightly cron jobs registered and verified (check logs next morning)
 
 ---
 
-## Part C â€” Upgrading an Existing Install
+## Part C — Upgrading an Existing Install
 
-If you already have some tables and need to add missing pieces, all schema files are idempotent â€” safe to re-run.
+If you already have some tables and need to add missing pieces, all schema files are idempotent — safe to re-run.
 
 | Missing component | Run |
 |---|---|
@@ -481,12 +494,14 @@ If you already have some tables and need to add missing pieces, all schema files
 | `mql_*` tables | Step 5 |
 | `agent_sheets` (whole table) | Step 4 |
 | `campaigns` table | Step 3 |
+| `contacts.bd_category` column | Step 10 |
 | All views outdated | Step 9 (views use `CREATE OR REPLACE`) |
+| `mql_allocations.close_reason` missing `escalated` | Run `sql/add_escalated_close_reason.sql` |
 | `phone_uncertain` column missing | `ALTER TABLE mql_call_attempts ADD COLUMN IF NOT EXISTS phone_uncertain BOOLEAN NOT NULL DEFAULT FALSE` |
 
 ---
 
-## Part D â€” Common Errors Reference
+## Part D — Common Errors Reference
 
 | Error | Cause | Fix |
 |---|---|---|
@@ -497,12 +512,11 @@ If you already have some tables and need to add missing pieces, all schema files
 | `relation "mql_allocations" does not exist` | Step 5 not run | Run `05_mql_migration.sql` |
 | `relation "dashboard_users" does not exist` | Step 6 not run | Run `06_rbac_auth.sql` |
 | `column "team" does not exist` on agents | Step 5 not run | Run `05_mql_migration.sql` |
+| `column "bd_category" does not exist` | Step 10 not run | Run `10_add_bd_category.sql` |
 | `column "connection_rate" does not exist` | Old view cached | Re-run `09_reporting_views.sql` |
 | Login page loops on refresh | `COOKIE_SECRET` not set | Add `COOKIE_SECRET=...` to `.env` |
 | `MEETING_SHEET_ID not set` | `.env` missing the key | Add `MEETING_SHEET_ID=` to `.env` |
 | `mql_call_attempts.phone_uncertain` missing | Schema predates column | `ALTER TABLE mql_call_attempts ADD COLUMN IF NOT EXISTS phone_uncertain BOOLEAN NOT NULL DEFAULT FALSE` |
-| `mql_migration.py`: agent not found | Name mismatch in CSV vs DB | Script auto-inserts as inactive MQL agent; verify spelling |
+| `mql_team_import.py`: agent not found | Name mismatch in CSV vs DB | Script auto-inserts as inactive MQL agent; verify spelling |
 | `ws.update()` DeprecationWarning | gspread positional args | Use `ws.update(range_name="A1", values=[...])` |
 | `cursor already closed` | Reusing cursor after `with` block | Open a new `with conn.cursor() as cur2:` block |
-
-

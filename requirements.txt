@@ -4,6 +4,7 @@ psycopg2-binary
 python-dotenv
 tabulate
 google-generativeai
+google-genai
 anthropic
 gspread
 google-auth

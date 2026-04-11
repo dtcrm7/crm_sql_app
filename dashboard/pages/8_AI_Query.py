@@ -304,12 +304,21 @@ def _get_history_item(item_id: int, username: str) -> dict | None:
 # AI
 # ─────────────────────────────────────────────────────────────
 
+def _import_gemini_sdk():
+    try:
+        from google import genai
+        from google.genai import types
+        return genai, types
+    except Exception as e:
+        raise ImportError(
+            "Gemini SDK import failed. Add 'google-genai' to requirements and redeploy Streamlit."
+        ) from e
+
 def ask_ai(question: str, cfg: dict, schema: str) -> str:
     prompt = SYSTEM_PROMPT.format(max_rows=MAX_ROWS, schema=schema)
 
     if cfg["provider"] == "gemini":
-        from google import genai
-        from google.genai import types
+        genai, types = _import_gemini_sdk()
         client = genai.Client(api_key=cfg["api_key"])
         response = client.models.generate_content(
             model=cfg["model"],
@@ -387,7 +396,7 @@ def test_key(provider_id: str, api_key: str, model: str) -> tuple[bool, str]:
     """Returns (success, error_message). error_message is '' on success."""
     try:
         if provider_id == "gemini":
-            from google import genai
+            genai, _ = _import_gemini_sdk()
             client = genai.Client(api_key=api_key)
             client.models.generate_content(model=model, contents="reply: ok")
         else:

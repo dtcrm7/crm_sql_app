@@ -35,24 +35,33 @@ Streamlit Dashboard (13 pages)
 │   ├── pages/              13 dashboard pages (BD + MQL + Meetings)
 │   └── utils/              DB, auth, engine, sheets helpers
 ├── scripts/                Nightly sync & utility scripts
-│   ├── call_actions_sync.py    BD sheet → DB
-│   ├── mql_sync.py             MQL sheet → DB + meeting creation
-│   ├── meeting_sync.py         Meetings sheet → DB + write-back
-│   ├── allocation_engine.py    BD contact allocation → sheets
-│   ├── mql_allocation_engine.py MQL allocation → sheets
-│   ├── backup_db.py            Database backup
-│   ├── create_admin_user.py    User management
-│   └── ai_query_shell.py       CLI natural-language SQL
+│   ├── call_actions_sync.py        BD sheet → DB
+│   ├── mql_sync.py                 MQL sheet → DB + meeting creation
+│   ├── meeting_sync.py             Meetings sheet → DB + write-back
+│   ├── allocation_engine.py        BD contact allocation → sheets
+│   ├── mql_allocation_engine.py    MQL allocation → sheets
+│   ├── bd_story_import.py          One-time BD story history import
+│   ├── mql_team_import.py          One-time MQL team history import
+│   ├── mql_pro_sheet_backfill.py   Backfill FU history to MQL sheets
+│   ├── marketing_sheet_export.py   Export MQL contacts for marketing campaigns
+│   ├── backup_db.py                Full pg_dump backup
+│   ├── backup_db_incremental.py    Incremental row-level backup to CSV
+│   ├── sheet_values_config.py      Centralized sheet dropdown values & normalization maps
+│   ├── create_admin_user.py        User management
+│   └── ai_query_shell.py           CLI natural-language SQL
 ├── sql/                    Schema migration files (run in order)
-│   ├── 01_schema_phase1.sql    Core tables
-│   ├── 02_schema_phase2a.sql   BD pipeline
-│   ├── 03_add_campaign.sql     Campaigns
-│   ├── 04_migration_campaign_v2.sql  Agent sheets
-│   ├── 05_mql_migration.sql    MQL pipeline
-│   ├── 06_rbac_auth.sql        Auth & audit
+│   ├── 01_schema_phase1.sql            Core tables
+│   ├── 02_schema_phase2a.sql           BD pipeline
+│   ├── 03_add_campaign.sql             Campaigns
+│   ├── 04_migration_campaign_v2.sql    Agent sheets
+│   ├── 05_mql_migration.sql            MQL pipeline
+│   ├── 06_rbac_auth.sql                Auth & audit
 │   ├── 07_reallocation_campaigns.sql
-│   ├── 08_meetings_schema.sql  Meetings pipeline
-│   └── 09_reporting_views.sql  Views & indexes
+│   ├── 08_meetings_schema.sql          Meetings pipeline
+│   ├── 09_reporting_views.sql          Views & indexes
+│   ├── 10_add_bd_category.sql          contacts.bd_category column
+│   ├── add_escalated_close_reason.sql  Patch mql_allocations close_reason constraint
+│   └── agent_sheets_schema.sql         agent_sheets table (standalone patch)
 ├── docs/                   Detailed documentation
 │   ├── ARCHITECTURE.md     Full system architecture
 │   ├── SETUP_GUIDE.md      Local & cloud deployment guide
@@ -91,7 +100,7 @@ cp .env.example .env
 # 3. Create database and run schema
 # In pgAdmin or psql:
 #   CREATE DATABASE crm_db;
-# Then run sql/01 through sql/09 in order
+# Then run sql/01 through sql/10 in order
 
 # 4. Create admin user
 python scripts/create_admin_user.py --username admin --name "Your Name" --role admin
