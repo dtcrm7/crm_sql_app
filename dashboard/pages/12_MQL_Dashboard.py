@@ -233,7 +233,14 @@ def _apply_attempt_filters(df: pd.DataFrame, key_prefix: str) -> pd.DataFrame:
 
 def _compute_agent_summary(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=[
+            "agent_name", "total_calls",
+            "fresh_connect", "fu_attempts", "followup_connect",
+            "connected", "connection_rate_pct",
+            "dnc", "dnd", "cbl", "invalid", "not_interested",
+            "attempt_again", "snapshot", "meeting", "escalate",
+            "true_mql",
+        ])
 
     d = _flag_call_status(df.copy())
     d = _flag_current_state(d)
@@ -254,6 +261,20 @@ def _compute_agent_summary(df: pd.DataFrame) -> pd.DataFrame:
         meeting=("_meeting", "sum"),
         escalate=("_escalate", "sum"),
     ).reset_index()
+
+    agg["connection_rate_pct"] = (
+        agg["connected"] * 100.0 / agg["total_calls"].clip(lower=1)
+    ).round(1)
+
+    # Per-agent True MQL is counted as unique contacts that reached snapshot-confirmed states.
+    true_mql = (
+        d[d["_snapshot"] == 1]
+        .groupby("agent_name")["contact_id"]
+        .nunique()
+        .reset_index(name="true_mql")
+    )
+    agg = agg.merge(true_mql, on="agent_name", how="left")
+    agg["true_mql"] = agg["true_mql"].fillna(0).astype(int)
 
     # SQL count per agent (from closure logic in query)
     # The 'qualified' column in the per-agent table comes from the 'alloc' CTE in _load_mql_stats,
